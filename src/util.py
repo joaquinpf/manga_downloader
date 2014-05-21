@@ -24,8 +24,8 @@ except ImportError:
 ####################
 
 # overwrite user agent for spoofing, enable GZIP
-urlReqHeaders = {	'User-agent':	"""Mozilla/5.0 (X11; U; Linux i686; 
-					en-US) AppleWebKit/534.3 (KHTML, like 
+urlReqHeaders = {	'User-agent':	"""Mozilla/5.0 (X11; U; Linux i686;
+					en-US) AppleWebKit/534.3 (KHTML, like
 					Gecko) Chrome/6.0.472.14 Safari/534.3""",
 			'Accept-encoding':'gzip'				}
 
@@ -39,11 +39,11 @@ def fixFormatting(s, spaceToken):
 	"""
 	Special character fix for filesystem paths.
 	"""
-	
+
 	for i in string.punctuation:
 		if(i != '-' and i != spaceToken):
 			s = s.replace(i, '')
-	return s.lower().lstrip(spaceToken).strip().replace(' ', spaceToken)
+	return s.lstrip(spaceToken).strip().replace(' ', spaceToken)
 
 def getSourceCode(url, proxy, returnRedirctUrl = False, maxRetries=1, waitRetryTime=1):
 	"""
@@ -55,22 +55,22 @@ def getSourceCode(url, proxy, returnRedirctUrl = False, maxRetries=1, waitRetryT
 		proxySettings = proxy.split(':')
 		socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS4, proxySettings[0], int(proxySettings[1]), True)
 		socket.socket = socks.socksocket
-				
+
 	global urlReqHeaders
-	
+
 	ret = None
-	request = urllib2.Request(url, headers=urlReqHeaders) 
-	
-	while (ret == None): 
+	request = urllib2.Request(url, headers=urlReqHeaders)
+
+	while (ret == None):
 		try:
 			f = urllib2.urlopen(request)
 			encoding = f.headers.get('Content-Encoding')
-					
+
 			if encoding == None:
 				ret = f.read()
 			else:
-				if encoding.upper() == 'GZIP': 
-					compressedstream = io.BytesIO(f.read()) 
+				if encoding.upper() == 'GZIP':
+					compressedstream = io.BytesIO(f.read())
 					gzipper = gzip.GzipFile(fileobj=compressedstream)
 					ret = gzipper.read()
 				else:
@@ -97,10 +97,10 @@ def isImageLibAvailable():
 		return False
 
 def zeroFillStr(inputString, numOfZeros):
-	return re.sub(	'\d+', 
+	return re.sub(	'\d+',
 					lambda matchObj:
-						# string formatting trick to zero-pad 
-						('%0' + str(numOfZeros) + 'i') % int(matchObj.group(0)), 
+						# string formatting trick to zero-pad
+						('%0' + str(numOfZeros) + 'i') % int(matchObj.group(0)),
 					inputString	)
 
 #=========================
@@ -113,10 +113,10 @@ def getText(node):
 	rc = []
 	for node in node.childNodes:
 		if node.nodeType == node.TEXT_NODE:
-			rc.append(node.data)		
-			
+			rc.append(node.data)
+
 		return ''.join(rc)
-#		return ''.join([node.data for node in nodelist if node.nodeType == node.TEXT_NODE])			
+#		return ''.join([node.data for node in nodelist if node.nodeType == node.TEXT_NODE])
 
 def setText(dom, node, text):
 	for currNode in node.childNodes:
@@ -126,7 +126,7 @@ def setText(dom, node, text):
 
 	# If this code is executed, it means that the loop failed to find a text node
 	# A new text needs to be created and appended to this node
-	textNode = dom.createTextNode(text) 	
+	textNode = dom.createTextNode(text)
 	node.appendChild(textNode)
 
 def updateNode(dom, node, tagName, text):
@@ -137,6 +137,6 @@ def updateNode(dom, node, tagName, text):
 		# Node Currently Does have a timeStamp Node Must add one
 		updateNode = dom.createElement(tagName)
 		node.appendChild(updateNode)
-		
-	setText(dom, updateNode, text) 	
-	
+
+	setText(dom, updateNode, text)
+
