@@ -1,11 +1,10 @@
 #!/usr/bin/python
 
 import re
-import string
 from bs4 import BeautifulSoup
 
 from parsers.base import SiteParserBase
-from util import fixFormatting, getSourceCode
+from util import getSourceCode
 
 class Batoto(SiteParserBase):
     class PointlessThing2:
@@ -55,7 +54,7 @@ class Batoto(SiteParserBase):
         manga = self.selectFromResults(seriesl)
         if self.verbose_FLAG:
             print(manga)
-        mname = [i for i in seriesl if i[0] == manga][0][1]
+
         s = getSourceCode(manga, self.proxy)
         soup = BeautifulSoup(s)
         t = soup.find("table", class_="chapters_list").tbody

@@ -9,7 +9,7 @@ import time
 #####################
 
 from parsers.base import SiteParserBase
-from util import fixFormatting, getSourceCode
+from util import getSourceCode
 
 #####################
 
