@@ -127,10 +127,7 @@ class MangaHere(SiteParserBase):
 			re_getChapters = re.compile('a.*?href="http://.*?mangahere.*?/manga/%s/(c[\d]+(\.[\d]+)?)/[^"]*?"' % keyword)
 			self.chapters = re_getChapters.findall(source)
 
-		#Remove not available chapter
-		del self.chapters[0]
-
-		#Sort chapters by volume and chapter number
+		#Sort chapters by volume and chapter number. Needed because next chapter isn't always accurate.
 		self.chapters = sorted(self.chapters, cmp=self.chapter_compare)
 
 		# code used to both fix URL from relative to absolute as well as verify last downloaded chapter for XML component
