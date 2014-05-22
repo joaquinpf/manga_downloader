@@ -48,9 +48,10 @@ siteDict = {
 		'2' : '[mr]',
 		'3' : '[mp]',
 		'4' : '[mh]',
+		'5' : '[em]',
 					}
 if HAVE_SOUP:
-	siteDict['5'] = '[bt]'
+	siteDict['6'] = '[bt]'
 
 ##########
 
@@ -239,9 +240,9 @@ def main():
 
 				# site selection
 				if HAVE_SOUP:
-					print('\nWhich site?\n(1) MangaFox\n(2) MangaReader\n(3) MangaPanda\n(4) MangaHere\n(5) Batoto\n')
+					print('\nWhich site?\n(1) MangaFox\n(2) MangaReader\n(3) MangaPanda\n(4) MangaHere\n(5) EatManga\n(6) Batoto\n')
 				else:
-					print('\nWhich site?\n(1) MangaFox\n(2) MangaReader\n(3) MangaPanda\n(4) MangaHere\n')
+					print('\nWhich site?\n(1) MangaFox\n(2) MangaReader\n(3) MangaPanda\n(4) MangaHere\n(5) EatManga\n')
 
 				# Python3 fix - removal of raw_input()
 				try:
