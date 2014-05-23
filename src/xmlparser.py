@@ -43,6 +43,11 @@ class MangaXmlParser:
 				lastDownloaded = ""
 
 			try:
+				checkEveryMinutes = int(getText(node.getElementsByTagName('CheckEveryMinutes')[0]))
+			except IndexError:
+				checkEveryMinutes = None
+
+			try:
 				download_path =	getText(node.getElementsByTagName('downloadPath')[0])
 			except IndexError:
 				download_path = ('./' + fixFormatting(seriesOptions.manga, seriesOptions.spaceToken))
@@ -66,7 +71,7 @@ class MangaXmlParser:
 			# the print statement would intermingle with the progress bar. It would be very difficult to
 			# understand what was happening. Do not believe this change is worth it.
 
-			threadPool.append(SiteParserThread(seriesOptions, dom, node))
+			threadPool.append(SiteParserThread(seriesOptions, dom, node, checkEveryMinutes))
 
 		for thread in threadPool:
 			thread.start()
