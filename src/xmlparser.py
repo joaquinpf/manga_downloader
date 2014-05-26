@@ -9,6 +9,8 @@ from xml.dom import minidom
 from parsers.thread import SiteParserThread
 from util import fixFormatting, getText
 import os
+import time
+
 ######################
 
 class MangaXmlParser:
@@ -18,6 +20,16 @@ class MangaXmlParser:
 			setattr(self, elem, getattr(optDict, elem))
 
 	def downloadManga(self):
+		while True:
+			self._downloadManga()
+
+			if not self.check_every_minutes or self.check_every_minutes < 0:
+				break
+
+			print "Will check again in %s minutes" % self.options.check_every_minutes
+			time.sleep(60 * self.options.check_every_minutes)
+
+	def _downloadManga(self):
 		print("Parsing XML File...")
 		if (self.verbose_FLAG):
 			print("XML Path = %s" % self.xmlfile_path)
@@ -32,6 +44,8 @@ class MangaXmlParser:
 		if (self.options.outputDir == 'DEFAULT_VALUE'):
 			SetOutputPathToName_Flag = True
 
+		base_output_dir = self.options.downloadPath
+
 		for node in dom.getElementsByTagName("MangaSeries"):
 			seriesOptions = self.options
 			seriesOptions.manga = getText(node.getElementsByTagName('name')[0])
@@ -43,17 +57,12 @@ class MangaXmlParser:
 				lastDownloaded = ""
 
 			try:
-				checkEveryMinutes = int(getText(node.getElementsByTagName('CheckEveryMinutes')[0]))
-			except IndexError:
-				checkEveryMinutes = None
-
-			try:
 				download_path =	getText(node.getElementsByTagName('downloadPath')[0])
 			except IndexError:
 				download_path = ('./' + fixFormatting(seriesOptions.manga, seriesOptions.spaceToken))
 
-			if self.options.downloadPath != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
-				download_path = os.path.join(self.options.downloadPath, download_path)
+			if base_output_dir != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
+				download_path = os.path.join(base_output_dir, download_path)
 
 			seriesOptions.downloadPath = download_path
 			seriesOptions.lastDownloaded = lastDownloaded
@@ -71,7 +80,7 @@ class MangaXmlParser:
 			# the print statement would intermingle with the progress bar. It would be very difficult to
 			# understand what was happening. Do not believe this change is worth it.
 
-			threadPool.append(SiteParserThread(seriesOptions, dom, node, checkEveryMinutes))
+			threadPool.append(SiteParserThread(seriesOptions, dom, node))
 
 		for thread in threadPool:
 			thread.start()

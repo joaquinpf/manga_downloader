@@ -4,7 +4,6 @@
 
 import datetime
 import threading
-import time
 import os
 try:
 	import socks
@@ -16,13 +15,13 @@ import socket
 
 from parsers.base import SiteParserBase
 from parsers.factory import SiteParserFactory
-from util import isImageLibAvailable, updateNode
+from util import updateNode
 
 #####################
 
 class SiteParserThread( threading.Thread ):
 
-	def __init__ ( self, optDict, dom, node, checkEveryMinutes = None):
+	def __init__ ( self, optDict, dom, node):
 		threading.Thread.__init__(self)
 
 		for elem in vars(optDict):
@@ -31,7 +30,6 @@ class SiteParserThread( threading.Thread ):
 		self.dom = dom
 		self.node = node
 		self.siteParser = SiteParserFactory.getInstance(self)
-		self.checkEveryMinutes = checkEveryMinutes
 
 		# create download directory if not found
 		try:
@@ -46,25 +44,18 @@ class SiteParserThread( threading.Thread ):
 		print('\n')
 
 	def run (self):
-		while True:
-			success = False
-			try:
-				self.siteParser.parseSite()
+		try:
+			self.siteParser.parseSite()
+			self.downloadNewChapters()
 
-			except self.siteParser.NoUpdates:
-				print ("Manga ("+self.manga+") up-to-date.")
+		except self.siteParser.NoUpdates:
+			print ("Manga ("+self.manga+") up-to-date.")
 
-			except SiteParserBase.MangaNotFound as Instance:
-				print("Error: Manga ("+self.manga+")")
-				print(Instance)
-				print("\n")
-				return
-
-			if not self.checkEveryMinutes:
-				break
-
-			print "Will check again in %s minutes" % self.checkEveryMinutes
-			time.sleep(60 * self.checkEveryMinutes)
+		except SiteParserBase.MangaNotFound as Instance:
+			print("Error: Manga ("+self.manga+")")
+			print(Instance)
+			print("\n")
+			return
 
 	def downloadNewChapters(self):
 

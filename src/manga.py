@@ -90,7 +90,8 @@ def main():
 				maxChapterThreads = 3,
 				useShortName = False,
 				spaceToken = '.',
-				proxy = None
+				proxy = None,
+				check_every_minutes = -1
 				)
 
 	parser.add_option(	'--all',
@@ -165,6 +166,11 @@ def main():
 	parser.add_option( 	'--proxy',
 				dest = 'proxy',
 				help = 'Specifies the proxy.'				)
+
+	parser.add_option( 	'--checkEveryMinutes',
+				dest = 'check_every_minutes',
+				help = 'When used with -x sets the time in minutes between checks for your bookmarked manga.',
+				type = "int"				)
 
 	(options, args) = parser.parse_args()
 
