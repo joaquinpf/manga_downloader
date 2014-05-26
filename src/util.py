@@ -35,13 +35,15 @@ urlReqHeaders = {	'User-agent':	"""Mozilla/5.0 (X11; U; Linux i686;
 class FatalError(Exception):
 	pass
 
+IGNORE_CHARS = ['-', '(', '!', ')']
+
 def fixFormatting(s, spaceToken):
 	"""
 	Special character fix for filesystem paths.
 	"""
 
 	for i in string.punctuation:
-		if(i != '-' and i != spaceToken):
+		if(i not in IGNORE_CHARS and i != spaceToken):
 			s = s.replace(i, '')
 	return s.lstrip(spaceToken).strip().replace(' ', spaceToken)
 
