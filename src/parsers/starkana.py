@@ -55,8 +55,6 @@ class Starkana(SiteParserBase):
             for i in range (lowerRange, upperRange):
                 self.chapters_to_download .append(i)
 
-        self.isPrependMangaName = True
-
         return
 
     def downloadChapter(self, downloadThread, max_pages, url, manga_chapter_prefix, current_chapter):
