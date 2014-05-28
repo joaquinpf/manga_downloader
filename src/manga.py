@@ -243,7 +243,7 @@ def main():
 					mangaOptions.downloadPath = ('./' + fixFormatting(mangaOptions.manga, mangaOptions.spaceToken))
 
 				if SetOutputPathToDefault_Flag:
-					mangaOptions.outputDir = options.downloadPath
+					mangaOptions.outputDir = mangaOptions.downloadPath
 
 				mangaOptions.downloadPath = os.path.realpath(options.downloadPath) + os.sep
 
