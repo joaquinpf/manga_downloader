@@ -20,6 +20,7 @@
 import optparse
 import os
 import sys
+import copy
 try:
 	import socks
 	NO_SOCKS = False
@@ -234,16 +235,17 @@ def main():
 		else:
 			threadPool = []
 			for manga in args:
+				mangaOptions = copy.copy(options)
 				print( manga )
-				options.manga = manga
+				mangaOptions.manga = manga
 
 				if SetDownloadPathToName_Flag:
-					options.downloadPath = ('./' + fixFormatting(options.manga, options.spaceToken))
+					mangaOptions.downloadPath = ('./' + fixFormatting(mangaOptions.manga, mangaOptions.spaceToken))
 
 				if SetOutputPathToDefault_Flag:
-					options.outputDir = options.downloadPath
+					mangaOptions.outputDir = options.downloadPath
 
-				options.downloadPath = os.path.realpath(options.downloadPath) + os.sep
+				mangaOptions.downloadPath = os.path.realpath(options.downloadPath) + os.sep
 
 				# site selection
 				if HAVE_SOUP:
@@ -258,11 +260,11 @@ def main():
 					site = input()
 
 				try:
-					options.site = siteDict[site]
+					mangaOptions.site = siteDict[site]
 				except KeyError:
 					raise InvalidSite('Site selection invalid.')
 
-				threadPool.append(SiteParserThread(options, None, None))
+				threadPool.append(SiteParserThread(mangaOptions, None, None))
 
 			for thread in threadPool:
 				thread.start()

@@ -10,6 +10,7 @@ from parsers.thread import SiteParserThread
 from util import fixFormatting, getText
 import os
 import time
+import copy
 
 ######################
 
@@ -44,10 +45,8 @@ class MangaXmlParser:
 		if (self.options.outputDir == 'DEFAULT_VALUE'):
 			SetOutputPathToName_Flag = True
 
-		base_output_dir = self.options.downloadPath
-
 		for node in dom.getElementsByTagName("MangaSeries"):
-			seriesOptions = self.options
+			seriesOptions = copy.copy(self.options)
 			seriesOptions.manga = getText(node.getElementsByTagName('name')[0])
 			seriesOptions.site = getText(node.getElementsByTagName('HostSite')[0])
 
@@ -61,8 +60,8 @@ class MangaXmlParser:
 			except IndexError:
 				download_path = ('./' + fixFormatting(seriesOptions.manga, seriesOptions.spaceToken))
 
-			if base_output_dir != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
-				download_path = os.path.join(base_output_dir, download_path)
+			if self.options.downloadPath != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
+				download_path = os.path.join(self.options.downloadPath, download_path)
 
 			seriesOptions.downloadPath = download_path
 			seriesOptions.lastDownloaded = lastDownloaded
