@@ -20,59 +20,59 @@ from util import getSourceCode
 
 class MangaPanda(SiteParserBase):
 
-	re_getSeries = re.compile('<li><a href="([^"]*)">([^<]*)</a>')
-	re_getChapters = re.compile('<a href="([^"]*)">([^<]*)</a>([^<]*)</td>')
-	re_getPage = re.compile("<option value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
-	re_getImage = re.compile('img id="img" .* src="([^"]*)"')
-	re_getMaxPages = re.compile('</select> of (\d*)(\s)*</div>')
+    re_getSeries = re.compile('<li><a href="([^"]*)">([^<]*)</a>')
+    re_getChapters = re.compile('<a href="([^"]*)">([^<]*)</a>([^<]*)</td>')
+    re_getPage = re.compile("<option value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
+    re_getImage = re.compile('img id="img" .* src="([^"]*)"')
+    re_getMaxPages = re.compile('</select> of (\d*)(\s)*</div>')
 
-	def parseSite(self):
-		print('Beginning MangaPanda check: %s' % self.manga)
-		
-		url = 'http://www.mangapanda.com/alphabetical'
+    def parseSite(self):
+        print('Beginning MangaPanda check: %s' % self.manga)
 
-		source = getSourceCode(url, self.proxy)
-		allSeries = MangaPanda.re_getSeries.findall(source[source.find('series_col'):])
+        url = 'http://www.mangapanda.com/alphabetical'
 
-		keyword = self.selectFromResults(allSeries)
+        source = getSourceCode(url, self.proxy)
+        allSeries = MangaPanda.re_getSeries.findall(source[source.find('series_col'):])
 
-		url = 'http://www.mangapanda.com%s' % keyword
-		source = getSourceCode(url, self.proxy)
+        keyword = self.selectFromResults(allSeries)
 
-		self.chapters = MangaPanda.re_getChapters.findall(source)
-		
-		lowerRange = 0
-	
-		for i in range(0, len(self.chapters)):
-			self.chapters[i] = ('http://www.mangapanda.com%s' % self.chapters[i][0], '%s%s' % (self.chapters[i][1], self.chapters[i][2]), self.chapters[i][1])
-			if (not self.auto):
-				print('(%i) %s' % (i + 1, self.chapters[i][1]))
-			else:
-				if (self.lastDownloaded == self.chapters[i][1]):
-					lowerRange = i + 1
-		
-		# this might need to be len(self.chapters) + 1, I'm unsure as to whether python adds +1 to i after the loop or not
-		upperRange = len(self.chapters)
-		self.isPrependMangaName = False				
-		if (not self.auto):
-			self.chapters_to_download = self.selectChapters(self.chapters)
-		else:
-			if (lowerRange == upperRange):
-				raise self.NoUpdates
-			
-			for i in range (lowerRange, upperRange):
-				self.chapters_to_download .append(i)
-		
-		self.isPrependMangaName = True
-		
-		return 
-	
-	def downloadChapter(self, downloadThread, max_pages, url, manga_chapter_prefix, current_chapter):
-		pageIndex = 0
-		for page in MangaPanda.re_getPage.findall(getSourceCode(url, self.proxy)):
-			if (self.verbose_FLAG):
-				print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
+        url = 'http://www.mangapanda.com%s' % keyword
+        source = getSourceCode(url, self.proxy)
 
-			pageUrl = 'http://www.mangapanda.com' + page[0]
-			self.downloadImage(downloadThread, page[1], pageUrl, manga_chapter_prefix)
-			pageIndex = pageIndex + 1
+        self.chapters = MangaPanda.re_getChapters.findall(source)
+
+        lowerRange = 0
+
+        for i in range(0, len(self.chapters)):
+            self.chapters[i] = ('http://www.mangapanda.com%s' % self.chapters[i][0], '%s%s' % (self.chapters[i][1], self.chapters[i][2]), self.chapters[i][1])
+            if (not self.auto):
+                print('(%i) %s' % (i + 1, self.chapters[i][1]))
+            else:
+                if (self.lastDownloaded == self.chapters[i][1]):
+                    lowerRange = i + 1
+
+        # this might need to be len(self.chapters) + 1, I'm unsure as to whether python adds +1 to i after the loop or not
+        upperRange = len(self.chapters)
+        self.isPrependMangaName = False
+        if (not self.auto):
+            self.chapters_to_download = self.selectChapters(self.chapters)
+        else:
+            if (lowerRange == upperRange):
+                raise self.NoUpdates
+
+            for i in range (lowerRange, upperRange):
+                self.chapters_to_download .append(i)
+
+        self.isPrependMangaName = True
+
+        return
+
+    def downloadChapter(self, downloadThread, max_pages, url, manga_chapter_prefix, current_chapter):
+        pageIndex = 0
+        for page in MangaPanda.re_getPage.findall(getSourceCode(url, self.proxy)):
+            if (self.verbose_FLAG):
+                print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
+
+            pageUrl = 'http://www.mangapanda.com' + page[0]
+            self.downloadImage(downloadThread, page[1], pageUrl, manga_chapter_prefix)
+            pageIndex = pageIndex + 1

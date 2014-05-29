@@ -6,7 +6,6 @@ import time
 
 try:
     import socks
-
     NO_SOCKS = False
 except ImportError:
     NO_SOCKS = True

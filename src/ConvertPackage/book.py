@@ -107,7 +107,7 @@ class Book:
         filenames = []
 
         for directory in directories:
-             for root, subdirs, subfiles in os.walk(unicode(directory)):
+            for root, _, subfiles in os.walk(unicode(directory)):
                 for filename in subfiles:
                     path = os.path.join(root, filename)
                     if self.isImageFile(path):
@@ -118,25 +118,25 @@ class Book:
 
 
     def addImageFiles(self, filenames):
-		#print len(filenames)
-		for filename in filenames:
-			if filename not in self.images:
-				self.images.append(filename)
-				self.modified = True
-                
-                
+        #print len(filenames)
+        for filename in filenames:
+            if filename not in self.images:
+                self.images.append(filename)
+                self.modified = True
+
+
     def isImageFile(self, filename):
         imageExts = ['jpeg', 'jpg', 'gif', 'png']
 
         filetype = None
-        
+
         try:
-        	filetype = imghdr.what(str(filename))
+            filetype = imghdr.what(str(filename))
         except:
-        	return False
-        	     
+            return False
+
         return (
             os.path.isfile(filename) and
             filetype in imageExts
         )
-        
+

@@ -8,39 +8,35 @@ from parsers.mangapanda import MangaPanda
 from parsers.mangahere import MangaHere
 from parsers.eatmanga import EatManga
 from parsers.starkana import Starkana
-try:
-	from bs4 import BeautifulSoup
-	from parsers.batoto import Batoto
-except ImportError:
-	Batoto = None
+from parsers.batoto import Batoto
 
 #####################
 
 class SiteParserFactory():
-	"""
-	Chooses the right subclass function to call.
-	"""
-	@staticmethod
-	def getInstance(options):
-		ParserClass = {
-				'[mf]'        : MangaFox,
-				'[mr]'        : MangaReader,
-				'[mp]'        : MangaPanda,
-				'[mh]'        : MangaHere,
-				'[em]'        : EatManga,
-				'[bt]'        : Batoto,
-				'[sk]'        : Starkana,
-				'MangaFox'    : MangaFox,
-				'MangaReader' : MangaReader,
-				'MangaPanda'  : MangaPanda,
-				'MangaHere'   : MangaHere,
-				'EatManga'    : EatManga,
-				'Starkana'    : Starkana,
-				'Batoto'      : Batoto,
+    """
+    Chooses the right subclass function to call.
+    """
+    @staticmethod
+    def getInstance(options):
+        ParserClass = {
+                '[mf]'        : MangaFox,
+                '[mr]'        : MangaReader,
+                '[mp]'        : MangaPanda,
+                '[mh]'        : MangaHere,
+                '[em]'        : EatManga,
+                '[bt]'        : Batoto,
+                '[sk]'        : Starkana,
+                'MangaFox'    : MangaFox,
+                'MangaReader' : MangaReader,
+                'MangaPanda'  : MangaPanda,
+                'MangaHere'   : MangaHere,
+                'EatManga'    : EatManga,
+                'Starkana'    : Starkana,
+                'Batoto'      : Batoto,
 
-				}.get(options.site, None)
+                }.get(options.site, None)
 
-		if not ParserClass:
-			raise NotImplementedError( "Site Not Supported" )
+        if not ParserClass:
+            raise NotImplementedError( "Site Not Supported" )
 
-		return ParserClass(options)
+        return ParserClass(options)
