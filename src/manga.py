@@ -93,7 +93,8 @@ def main():
 				useShortName = False,
 				spaceToken = '.',
 				proxy = None,
-				check_every_minutes = -1
+				check_every_minutes = -1,
+				no_progress_bars = False
 				)
 
 	parser.add_option(	'--all',
@@ -174,6 +175,11 @@ def main():
 				help = 'When used with -x sets the time in minutes between checks for your bookmarked manga.',
 				type = "int"				)
 
+	parser.add_option( 	'--noProgressBars',
+				action = 'store_true',
+				dest = 'no_progress_bars',
+				help = 'Disable progress bars.'		)
+
 	(options, args) = parser.parse_args()
 
 	try:
@@ -221,7 +227,9 @@ def main():
 		os.chdir(os.path.dirname(sys.argv[0]))
 
 	options.outputMgr = progressBarManager()
-	options.outputMgr.start()
+	if not options.no_progress_bars:
+		options.outputMgr.start()
+
 	try:
 		if (options.convert_Directory):
 			if ( options.outputDir == 'DEFAULT_VALUE' ):
@@ -245,7 +253,7 @@ def main():
 				if SetOutputPathToDefault_Flag:
 					mangaOptions.outputDir = mangaOptions.downloadPath
 
-				mangaOptions.downloadPath = os.path.realpath(options.downloadPath) + os.sep
+				mangaOptions.downloadPath = os.path.realpath(mangaOptions.downloadPath) + os.sep
 
 				# site selection
 				if HAVE_SOUP:
@@ -271,7 +279,8 @@ def main():
 				thread.join()
 	finally:
 		# Must always stop the manager
-		options.outputMgr.stop()
+		if not options.no_progress_bars:
+			options.outputMgr.stop()
 
 
 if __name__ == '__main__':
