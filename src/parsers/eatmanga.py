@@ -42,7 +42,8 @@ class EatManga(SiteParserBase):
                 del self.chapters[i]
                 continue
 
-            self.chapters[i] = ('http://eatmanga.com%s' % self.chapters[i][0], self.chapters[i][2], self.chapters[i][2])
+            chapter_number = self.chapters[i][2].replace(self.manga, '').strip()
+            self.chapters[i] = ('http://eatmanga.com%s' % self.chapters[i][0], chapter_number, chapter_number)
             if (not self.auto):
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
             else:
@@ -60,8 +61,6 @@ class EatManga(SiteParserBase):
 
             for i in range (lowerRange, upperRange):
                 self.chapters_to_download.append(i)
-
-        self.isPrependMangaName = True
 
         return
 

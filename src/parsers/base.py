@@ -59,7 +59,6 @@ class SiteParserBase:
         # should be defined by subclasses
         self.re_getImage = None
         self.re_getMaxPages = None
-        self.isPrependMangaName = False
 
     # this takes care of removing the temp directory after the last successful download
     def __del__(self):
@@ -183,10 +182,7 @@ class SiteParserBase:
         # Do not need to ZeroFill the manga name because this should be consistent
         # MangaFox already prepends the manga name
         if self.useShortName_FLAG:
-            if (not self.isPrependMangaName):
-                manga_chapter_prefix = fixFormatting(self.manga, self.spaceToken)+ self.spaceToken + zeroFillStr(fixFormatting(self.chapters[current_chapter][2], self.spaceToken), 3)
-            else:
-                manga_chapter_prefix = zeroFillStr(fixFormatting(self.chapters[current_chapter][2], self.spaceToken), 3)
+            manga_chapter_prefix = fixFormatting(self.manga, self.spaceToken) + self.spaceToken + '-' + self.spaceToken + zeroFillStr(fixFormatting(self.chapters[current_chapter][2], self.spaceToken), 3)
         else:
             manga_chapter_prefix = fixFormatting(self.manga, self.spaceToken) + '.' +  self.site + '.' + zeroFillStr(fixFormatting(self.chapters[current_chapter][1].decode('utf-8'), self.spaceToken), 3)
 

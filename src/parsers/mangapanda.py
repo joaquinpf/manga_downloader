@@ -44,7 +44,8 @@ class MangaPanda(SiteParserBase):
         lowerRange = 0
 
         for i in range(0, len(self.chapters)):
-            self.chapters[i] = ('http://www.mangapanda.com%s' % self.chapters[i][0], '%s%s' % (self.chapters[i][1], self.chapters[i][2]), self.chapters[i][1])
+            chapter_number = self.chapters[i][1].replace(self.manga, '').strip()
+            self.chapters[i] = ('http://www.mangapanda.com%s' % self.chapters[i][0], '%s%s' % (chapter_number, self.chapters[i][2]), chapter_number)
             if (not self.auto):
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
             else:
@@ -53,7 +54,6 @@ class MangaPanda(SiteParserBase):
 
         # this might need to be len(self.chapters) + 1, I'm unsure as to whether python adds +1 to i after the loop or not
         upperRange = len(self.chapters)
-        self.isPrependMangaName = False
         if (not self.auto):
             self.chapters_to_download = self.selectChapters(self.chapters)
         else:
@@ -62,8 +62,6 @@ class MangaPanda(SiteParserBase):
 
             for i in range (lowerRange, upperRange):
                 self.chapters_to_download .append(i)
-
-        self.isPrependMangaName = True
 
         return
 
