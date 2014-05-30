@@ -53,7 +53,7 @@ class Starkana(SiteParserBase):
                 raise self.NoUpdates
 
             for i in range (lowerRange, upperRange):
-                self.chapters_to_download .append(i)
+                self.chapters_to_download.append(i)
 
         return
 

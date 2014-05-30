@@ -24,9 +24,9 @@ import copy
 
 ##########
 
-from parsers.thread import SiteParserThread
+from parsers.manga_downloader import MangaDownloader
 from util import fixFormatting, isImageLibAvailable
-from xmlparser import MangaXmlParser
+from json_parser import MangaJsonParser
 from outputManager.progressBarManager import progressBarManager
 ##########
 
@@ -104,9 +104,9 @@ def main():
                 dest='verbose_FLAG',
                 help='Verbose Output.')
 
-    parser.add_option('-x', '--xml',
-                dest='xmlfile_path',
-                help='Parses the .xml file and downloads all chapters newer than the last chapter downloaded for the listed mangas.')
+    parser.add_option('-j', '--json',
+                dest='json_file_path',
+                help='Parses the .json file and downloads all chapters newer than the last chapter downloaded for the listed mangas.')
 
     parser.add_option('-c', '--convertFiles',
                 action='store_true',
@@ -178,7 +178,7 @@ def main():
     if (options.maxChapterThreads <= 0):
         options.maxChapterThreads = 2;
 
-    if(len(args) == 0 and (not (options.convert_Directory or options.xmlfile_path != None))):
+    if(len(args) == 0 and (not (options.convert_Directory or options.json_file_path != None))):
         parser.error('Manga not specified.')
 
     # if(len(args) > 1):
@@ -214,6 +214,7 @@ def main():
     if (os.path.dirname(sys.argv[0]) != ""):
         os.chdir(os.path.dirname(sys.argv[0]))
 
+    options.notificator = None
     options.outputMgr = progressBarManager()
     if not options.no_progress_bars:
         options.outputMgr.start()
@@ -225,23 +226,22 @@ def main():
             print("Converting Files: %s" % options.inputDir)
             convertFile.convert(options.outputMgr, options.inputDir, options.outputDir, options.device, options.verbose_FLAG)
 
-        elif options.xmlfile_path != None:
-            xmlParser = MangaXmlParser(options)
-            xmlParser.downloadManga()
+        elif options.json_file_path != None:
+            json_parser = MangaJsonParser(options)
+            json_parser.download_manga()
         else:
-            threadPool = []
             for manga in args:
-                mangaOptions = copy.copy(options)
+                series_options = copy.copy(options)
                 print(manga)
-                mangaOptions.manga = manga
+                series_options.manga = manga
 
                 if SetDownloadPathToName_Flag:
-                    mangaOptions.downloadPath = ('./' + fixFormatting(mangaOptions.manga, mangaOptions.spaceToken))
+                    series_options.downloadPath = ('./' + fixFormatting(series_options.manga, series_options.spaceToken))
 
                 if SetOutputPathToDefault_Flag:
-                    mangaOptions.outputDir = mangaOptions.downloadPath
+                    series_options.outputDir = series_options.downloadPath
 
-                mangaOptions.downloadPath = os.path.realpath(mangaOptions.downloadPath) + os.sep
+                series_options.downloadPath = os.path.realpath(series_options.downloadPath) + os.sep
 
                 # site selection
                 print('\nWhich site?\n(1) MangaFox\n(2) MangaReader\n(3) MangaPanda\n(4) MangaHere\n(5) EatManga\n(6) Starkana\n(7) Batoto\n')
@@ -253,15 +253,13 @@ def main():
                     site = input()
 
                 try:
-                    mangaOptions.site = siteDict[site]
+                    series_options.site = siteDict[site]
                 except KeyError:
                     raise InvalidSite('Site selection invalid.')
 
-                threadPool.append(SiteParserThread(mangaOptions, None, None))
+                serie = MangaDownloader(series_options)
+                serie.download_new_chapters()
 
-            for thread in threadPool:
-                thread.start()
-                thread.join()
     finally:
         # Must always stop the manager
         if not options.no_progress_bars:

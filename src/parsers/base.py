@@ -387,6 +387,9 @@ class SiteParserBase:
         compressedFile = self.compress(manga_chapter_prefix, max_pages)
         self.convertChapter( compressedFile )
 
+        if self.notificator:
+            self.notificator.push_note("MangaDownloader: %s finished downloading" % manga_chapter_prefix, "%s finished downloading" % manga_chapter_prefix)
+
     def convertChapter(self, compressedFile):
         # Check if the conversion flag is set
         if ( self.conversion_FLAG ):
