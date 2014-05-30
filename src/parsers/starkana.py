@@ -10,7 +10,7 @@ class Starkana(SiteParserBase):
     #re_getPage = re.compile("<option.*?value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
     re_getMaxPages = re.compile('</select> of <strong>(\d*)')
     re_getImage = re.compile('img.*?class="dyn" src="([^"]*)')
-    re_getChapters = re.compile('<a class="download-link" href="([^"]*)">([^<]*) <em>chapter</em> <strong>(\d*)</strong></a>')
+    re_getChapters = re.compile('<a class="download-link" href="([^"]*)">([^<]*) <em>chapter</em> <strong>([\d\.]*)</strong></a>')
 
     def fixFormatting(self, s):
         p = re.compile( '\s+')
