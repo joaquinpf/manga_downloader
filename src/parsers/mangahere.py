@@ -20,6 +20,7 @@ class MangaHere(SiteParserBase):
     #re_getChapters = re.compile('"(.*?Ch.[\d.]*)[^"]*","([^"]*)"')
     re_getImage = re.compile('<img src="([^"]*.jpg)[^"]*"')
     re_getMaxPages = re.compile('var total_pages = ([^;]*?);')
+    re_non_decimal = re.compile(r'[^\d.]+')
 
     def fixFormatting(self, s):
 
@@ -142,13 +143,16 @@ class MangaHere(SiteParserBase):
                     if (self.lastDownloaded == self.chapters[i][0]):
                         lowerRange = i + 1
 
-                self.chapters[i] = ('http://www.mangahere.com/manga/%s/%s' % (keyword, self.chapters[i][0]), self.chapters[i][0], self.chapters[i][0])
+                ch_number = self.re_non_decimal.sub('', self.chapters[i][0])
+                self.chapters[i] = ('http://www.mangahere.com/manga/%s/%s' % (keyword, self.chapters[i][0]), self.chapters[i][0], ch_number)
 
         else:
             for i in range(0, len(self.chapters)):
                 if self.verbose_FLAG:
                     print("%s %s" % (self.chapters[i][0], self.chapters[i][1]))
-                self.chapters[i] = ('http://www.mangahere.com/manga/%s/%s/%s' % (keyword, self.chapters[i][0], self.chapters[i][1]), self.chapters[i][0] + "." + self.chapters[i][1], self.chapters[i][1])
+
+                ch_number = self.re_non_decimal.sub('', self.chapters[i][1])
+                self.chapters[i] = ('http://www.mangahere.com/manga/%s/%s/%s' % (keyword, self.chapters[i][0], self.chapters[i][1]), self.chapters[i][0] + "." + self.chapters[i][1], ch_number)
                 if (self.auto):
                     if (self.lastDownloaded == self.chapters[i][1]):
                         lowerRange = i + 1
