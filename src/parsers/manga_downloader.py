@@ -31,7 +31,7 @@ class MangaDownloader:
 
             success = self.siteParser.download()
 
-            return success, str(iLastChap)
+            return success, iLastChap
 
         except OSError:
             print("""Unable to create download directory. There may be a file
