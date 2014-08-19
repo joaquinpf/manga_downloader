@@ -96,9 +96,6 @@ class Batoto(SiteParserBase):
         sc = None
         for i in self.chapters:
             if len(i) == 1 or sc == None:
-                if sc != None and sc[2] != i[0][2]:
-                    if self.verbose_FLAG:
-                        print("switched to {} at {}".format(i[0][2], i[0][3]))
                 sc = i[0]
                 del i[1:]
                 continue

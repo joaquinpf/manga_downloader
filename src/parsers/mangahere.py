@@ -41,6 +41,9 @@ class MangaHere(SiteParserBase):
         if x_vol != y_vol:
             return 1 if x_vol > y_vol else -1
 
+        if not x[1] or not y[1]:
+            return 0
+
         x_chapter = float(non_decimal.sub('', x[1]))
         y_chapter = float(non_decimal.sub('', y[1]))
         if x_chapter != y_chapter:
@@ -137,8 +140,6 @@ class MangaHere(SiteParserBase):
 
         if isChapterOnly:
             for i in range(0, len(self.chapters)):
-                if self.verbose_FLAG:
-                    print("%s" % self.chapters[i][0])
                 if (self.auto):
                     if (self.lastDownloaded == self.chapters[i][0]):
                         lowerRange = i + 1
@@ -148,8 +149,6 @@ class MangaHere(SiteParserBase):
 
         else:
             for i in range(0, len(self.chapters)):
-                if self.verbose_FLAG:
-                    print("%s %s" % (self.chapters[i][0], self.chapters[i][1]))
 
                 ch_number = self.re_non_decimal.sub('', self.chapters[i][1])
                 self.chapters[i] = ('http://www.mangahere.com/manga/%s/%s/%s' % (keyword, self.chapters[i][0], self.chapters[i][1]), self.chapters[i][0] + "." + self.chapters[i][1], ch_number)

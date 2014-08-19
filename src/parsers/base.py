@@ -11,6 +11,7 @@ import threading
 import time
 import zipfile
 import traceback
+import requests
 
 #####################
 
@@ -164,7 +165,11 @@ class SiteParserBase:
         while True:
             try:
                 temp_path = os.path.join(self.tempFolder, manga_chapter_prefix + '_' + str(page).zfill(3))
-                urllib.urlretrieve(img_url, temp_path)
+
+                r = requests.get(img_url, timeout=10)
+                with open(temp_path, "wb") as code:
+                    code.write(r.content)
+                #urllib.urlretrieve(img_url, temp_path)
             except IOError:
                 pass
             else:
