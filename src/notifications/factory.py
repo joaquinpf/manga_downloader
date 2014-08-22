@@ -2,20 +2,25 @@
 
 from notifications.pushbullet import PushBullet
 
+
 class NotificationFactory():
     """
     Chooses the right subclass function to call.
     """
+
+    def __init__(self):
+        pass
+
     @staticmethod
-    def getInstance(parameters):
+    def get_instance(parameters):
         if not 'notificator' in parameters:
             return None
 
-        NotificatorClass = {
-                'PushBullet'    : PushBullet,
-                }.get(parameters['notificator'], None)
+        notificator_class = {
+            'PushBullet': PushBullet,
+        }.get(parameters['notificator'], None)
 
-        if not NotificatorClass:
+        if not notificator_class:
             raise NotImplementedError("Notificator Not Supported")
 
-        return NotificatorClass(parameters)
+        return notificator_class(parameters)

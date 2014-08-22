@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-####################
+# ###################
 
 import gzip
 import io
@@ -8,137 +8,108 @@ import random
 import re
 import string
 import time
+
 try:
     import socks
     NO_SOCKS = False
 except ImportError:
     NO_SOCKS = True
 import socket
-###################
+# ##################
 
 try:
     import urllib2
 except ImportError:
     import urllib.request as urllib2
 
-####################
+# ###################
 
 # overwrite user agent for spoofing, enable GZIP
-urlReqHeaders = {	'User-agent':	"""Mozilla/5.0 (X11; U; Linux i686;
+urlReqHeaders = {'User-agent': """Mozilla/5.0 (X11; U; Linux i686;
                     en-US) AppleWebKit/534.3 (KHTML, like
                     Gecko) Chrome/6.0.472.14 Safari/534.3""",
-            'Accept-encoding':'gzip'				}
+                 'Accept-encoding': 'gzip'}
 
-####################
+# ###################
+
 
 # something seriously wrong happened
 class FatalError(Exception):
     pass
 
+
 IGNORE_CHARS = ['-', '(', '!', ')']
 
-def fixFormatting(s, spaceToken):
+
+def fix_formatting(s, space_token):
     """
     Special character fix for filesystem paths.
     """
 
     for i in string.punctuation:
-        if(i not in IGNORE_CHARS and i != spaceToken):
+        if i not in IGNORE_CHARS and i != space_token:
             s = s.replace(i, '')
-    return s.lstrip(spaceToken).strip().replace(' ', spaceToken)
+    return s.lstrip(space_token).strip().replace(' ', space_token)
 
-def getSourceCode(url, proxy, returnRedirctUrl = False, maxRetries=1, waitRetryTime=1):
+
+def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_retry_time=3):
     """
     Loop to get around server denies for info or minor disconnects.
     """
-    if (proxy is not None):
-        if (NO_SOCKS):
+    if proxy is not None:
+        if NO_SOCKS:
             raise FatalError('socks library required to use proxy (e.g. SocksiPy)')
-        proxySettings = proxy.split(':')
-        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS4, proxySettings[0], int(proxySettings[1]), True)
+        proxy_settings = proxy.split(':')
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS4, proxy_settings[0], int(proxy_settings[1]), True)
         socket.socket = socks.socksocket
 
     global urlReqHeaders
 
     ret = None
+    requested_url = None
     request = urllib2.Request(url, headers=urlReqHeaders)
 
-    while (ret == None):
+    while ret is None:
         try:
-            f = urllib2.urlopen(request)
-            encoding = f.headers.get('Content-Encoding')
+            requested_url = urllib2.urlopen(request)
+            encoding = requested_url.headers.get('Content-Encoding')
 
-            if encoding == None:
-                ret = f.read()
+            if encoding is None:
+                ret = requested_url.read()
             else:
                 if encoding.upper() == 'GZIP':
-                    compressedstream = io.BytesIO(f.read())
-                    gzipper = gzip.GzipFile(fileobj=compressedstream)
+                    compressed_stream = io.BytesIO(requested_url.read())
+                    gzipper = gzip.GzipFile(fileobj=compressed_stream)
                     ret = gzipper.read()
                 else:
                     raise FatalError('Unknown HTTP Encoding returned')
-        except urllib2.URLError:
-            if (maxRetries == 0):
+        except Exception:
+            if max_retries == 0:
                 break
             else:
                 # random dist. for further protection against anti-leech
                 # idea from wget
-                time.sleep(random.uniform(0.5*waitRetryTime, 1.5*waitRetryTime))
-                maxRetries -= 1
+                time.sleep(random.uniform(0.5 * wait_retry_time, 1.5 * wait_retry_time))
+                max_retries -= 1
+        finally:
+            if return_redirect_url:
+                return ret, requested_url.geturl()
+            else:
+                return ret
 
-    if returnRedirctUrl:
-        return ret, f.geturl()
-    else:
-        return ret
 
-def isImageLibAvailable():
+def is_image_lib_available():
     try:
-        from ConvertPackage.ConvertFile import convertFile
+        from convert.convert_file import ConvertFile
+
         return True
     except ImportError:
         return False
 
-def zeroFillStr(inputString, numOfZeros):
-    return re.sub(	'\d+',
-                    lambda matchObj:
-                        # string formatting trick to zero-pad
-                        ('%0' + str(numOfZeros) + 'i') % int(matchObj.group(0)),
-                    inputString	)
 
-#=========================
-#
-# XML Helper Functions
-#
-#=========================
-
-def getText(node):
-    rc = []
-    for node in node.childNodes:
-        if node.nodeType == node.TEXT_NODE:
-            rc.append(node.data)
-
-        return ''.join(rc)
-#		return ''.join([node.data for node in nodelist if node.nodeType == node.TEXT_NODE])
-
-def setText(dom, node, text):
-    for currNode in node.childNodes:
-        if currNode.nodeType == currNode.TEXT_NODE:
-            currNode.data = text
-            return
-
-    # If this code is executed, it means that the loop failed to find a text node
-    # A new text needs to be created and appended to this node
-    textNode = dom.createTextNode(text)
-    node.appendChild(textNode)
-
-def updateNode(dom, node, tagName, text):
-    text = text.decode('utf-8')
-    if (len(node.getElementsByTagName(tagName)) > 0):
-        updateNode = node.getElementsByTagName(tagName)[0]
-    else:
-        # Node Currently Does have a timeStamp Node Must add one
-        updateNode = dom.createElement(tagName)
-        node.appendChild(updateNode)
-
-    setText(dom, updateNode, text)
-
+def zero_fill_str(input_string, num_of_zeros):
+    return re.sub('\d+',
+                  lambda match_obj:
+                  # string formatting trick to zero-pad
+                  ('%0' + str(num_of_zeros) + 'i') % int(match_obj.group(0)),
+                  input_string)

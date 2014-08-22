@@ -1,11 +1,13 @@
 #! /usr/bin/python
 
+
 class NotificationNotSent(Exception):
-    def __init__(self, errorMsg=''):
-        self.errorMsg = 'Unable to send notification. %s' % errorMsg
+    def __init__(self, error_msg=''):
+        self.errorMsg = 'Unable to send notification. %s' % error_msg
 
     def __str__(self):
         return self.errorMsg
+
 
 class Notificator:
     def __init__(self, parameters):

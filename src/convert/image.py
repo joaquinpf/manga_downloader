@@ -20,6 +20,9 @@ from PIL import Image, ImageDraw
 
 
 class ImageFlags:
+    def __init__(self):
+        pass
+
     Orient = 1 << 0
     Resize = 1 << 1
     Frame = 1 << 2
@@ -27,6 +30,10 @@ class ImageFlags:
 
 
 class KindleData:
+
+    def __init__(self):
+        pass
+
     Palette4 = [
         0x00, 0x00, 0x00,
         0x55, 0x55, 0x55,
@@ -100,85 +107,85 @@ class KindleData:
     }
 
 
-def quantizeImage(image, palette):
+def quantize_image(image, palette):
     colors = len(palette) / 3
     if colors < 256:
-        palette = palette + palette[:3] * (256 - colors)
+        palette += palette[:3] * (256 - colors)
 
-    palImg = Image.new('P', (1, 1))
-    palImg.putpalette(palette)
+    pal_img = Image.new('P', (1, 1))
+    pal_img.putpalette(palette)
 
-    return image.quantize(palette=palImg)
+    return image.quantize(palette=pal_img)
 
 
-def resizeImage(image, size):
-    widthDev, heightDev = size
-    widthImg, heightImg = image.size
+def resize_image(image, size):
+    width_dev, height_dev = size
+    width_img, height_img = image.size
 
-    if widthImg <= widthDev and heightImg <= heightDev:
+    if width_img <= width_dev and height_img <= height_dev:
         return image
 
-    ratioImg = float(widthImg) / float(heightImg)
-    ratioWidth = float(widthImg) / float(widthDev)
-    ratioHeight = float(heightImg) / float(heightDev)
+    ratio_img = float(width_img) / float(height_img)
+    ratio_width = float(width_img) / float(width_dev)
+    ratio_height = float(height_img) / float(height_dev)
 
-    if ratioWidth > ratioHeight:
-        widthImg = widthDev
-        heightImg = int(widthDev / ratioImg)
-    elif ratioWidth < ratioHeight:
-        heightImg = heightDev
-        widthImg = int(heightDev * ratioImg)
+    if ratio_width > ratio_height:
+        width_img = width_dev
+        height_img = int(width_dev / ratio_img)
+    elif ratio_width < ratio_height:
+        height_img = height_dev
+        width_img = int(height_dev * ratio_img)
     else:
-        widthImg, heightImg = size
+        width_img, height_img = size
 
-    return image.resize((widthImg, heightImg), Image.ANTIALIAS)
+    return image.resize((width_img, height_img), Image.ANTIALIAS)
 
 
-def formatImage(image):
+def format_image(image):
     if image.mode == 'RGB':
         return image
     return image.convert('RGB')
 
 
-def orientImage(image, size):
-    widthDev, heightDev = size
-    widthImg, heightImg = image.size
+def orient_image(image, size):
+    width_dev, height_dev = size
+    width_img, height_img = image.size
 
-    if (widthImg > heightImg) != (widthDev > heightDev):
+    if (width_img > height_img) != (width_dev > height_dev):
         return image.rotate(90, Image.BICUBIC, True)
 
     return image
 
 
-def frameImage(image, foreground, background, size):
-    widthDev, heightDev = size
-    widthImg, heightImg = image.size
+def frame_image(image, foreground, background, size):
+    width_dev, height_dev = size
+    width_img, height_img = image.size
 
-    pastePt = (
-        max(0, (widthDev - widthImg) / 2),
-        max(0, (heightDev - heightImg) / 2)
+    paste_pt = (
+        max(0, (width_dev - width_img) / 2),
+        max(0, (height_dev - height_img) / 2)
     )
 
     corner1 = (
-        pastePt[0] - 1,
-        pastePt[1] - 1
+        paste_pt[0] - 1,
+        paste_pt[1] - 1
     )
 
     corner2 = (
-        pastePt[0] + widthImg + 1,
-        pastePt[1] + heightImg + 1
+        paste_pt[0] + width_img + 1,
+        paste_pt[1] + height_img + 1
     )
 
-    imageBg = Image.new(image.mode, size, background)
-    imageBg.paste(image, pastePt)
+    image_bg = Image.new(image.mode, size, background)
+    image_bg.paste(image, paste_pt)
 
-    draw = ImageDraw.Draw(imageBg)
+    draw = ImageDraw.Draw(image_bg)
     draw.rectangle([corner1, corner2], outline=foreground)
 
-    return imageBg
+    return image_bg
 
 
-def convertImage(source, target, device, flags):
+def convert_image(source, target, device, flags):
     try:
         size, palette = KindleData.Profiles[device]
     except KeyError:
@@ -189,15 +196,15 @@ def convertImage(source, target, device, flags):
     except IOError:
         raise RuntimeError('Cannot read image file %s' % source)
 
-    image = formatImage(image)
+    image = format_image(image)
     if flags & ImageFlags.Orient:
-        image = orientImage(image, size)
+        image = orient_image(image, size)
     if flags & ImageFlags.Resize:
-        image = resizeImage(image, size)
+        image = resize_image(image, size)
     if flags & ImageFlags.Frame:
-        image = frameImage(image, tuple(palette[:3]), tuple(palette[-3:]), size)
+        image = frame_image(image, tuple(palette[:3]), tuple(palette[-3:]), size)
     if flags & ImageFlags.Quantize:
-        image = quantizeImage(image, palette)
+        image = quantize_image(image, palette)
 
     try:
         image.save(target)
