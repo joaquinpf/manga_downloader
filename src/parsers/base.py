@@ -6,7 +6,6 @@ import imghdr
 import os
 import shutil
 import tempfile
-import threading
 import zipfile
 import traceback
 import requests
@@ -47,6 +46,7 @@ class SiteParserBase:
         self.chapters_to_download = []
         self.temp_folder = tempfile.mkdtemp()
         self.garbage_images = {}
+        self.output_idx = None
 
         # should be defined by subclasses
         self.re_get_image = None
@@ -65,7 +65,7 @@ class SiteParserBase:
                 print('Pages: %s' % self.garbage_images[elem])
                 # ####
 
-    def download_chapter(self, download_thread, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         raise NotImplementedError('Should have implemented this')
 
     def parse_site(self):
@@ -113,7 +113,7 @@ class SiteParserBase:
         compressed_file = os.path.join(self.options.downloadPath, compressed_file)
         return compressed_file
 
-    def download_image(self, download_thread, page, page_url, manga_chapter_prefix):
+    def download_image(self, page, page_url, manga_chapter_prefix):
         """
         Given a page URL to download from, it searches using self.imageRegex
         to parse out the image URL, and downloads and names it using
@@ -130,13 +130,13 @@ class SiteParserBase:
                 if self.options.verbose_FLAG:
                     print(page_url)
                 source_code = get_source_code(page_url, self.options.proxy)
-                img_url = self.re_get_image.search(source_code).group(1)
+                img_url = self.__class__.re_get_image.search(source_code).group(1)
                 if self.options.verbose_FLAG:
                     print("Image URL: %s" % img_url)
             except AttributeError:
                 if max_retries == 0:
                     if not self.options.verbose_FLAG:
-                        self.options.outputMgr.update_output_obj(download_thread.output_idx)
+                        self.options.outputMgr.update_output_obj(self.output_idx)
                     return
                 else:
                     # random dist. for further protection against anti-leech
@@ -159,10 +159,10 @@ class SiteParserBase:
                 pass
             else:
                 break
-        if not self.options.verbose_FLAG:
-            self.options.outputMgr.update_output_obj(download_thread.output_idx)
+        if not self.options.verbose_FLAG and self.output_idx:
+            self.options.outputMgr.update_output_obj(self.output_idx)
 
-    def process_chapter(self, download_thread, current_chapter):
+    def process_chapter(self, current_chapter):
         """
         Calculates prefix for filenames, creates download directory if
         nonexistent, checks to see if chapter previously downloaded, returns
@@ -188,7 +188,6 @@ class SiteParserBase:
                 self.chapters[current_chapter][1].encode('utf-8') + ' already downloaded, skipping to next chapter...')
             return
 
-        SiteParserBase.DownloadChapterThread.acquire_semaphore()
         if self.options.timeLogging_FLAG:
             print(manga_chapter_prefix + " (Start Time): " + str(time.time()))
         # get the URL of the chapter homepage
@@ -203,14 +202,14 @@ class SiteParserBase:
 
         source = get_source_code(url, self.options.proxy)
 
-        max_pages = int(self.re_get_max_pages.search(source).group(1))
+        max_pages = int(self.__class__.re_get_max_pages.search(source).group(1))
 
         if self.options.verbose_FLAG:
             print ("Pages: " + str(max_pages))
         if not self.options.verbose_FLAG:
-            download_thread.output_idx = self.options.outputMgr.create_output_obj(manga_chapter_prefix, max_pages)
+            self.output_idx = self.options.outputMgr.create_output_obj(manga_chapter_prefix, max_pages)
 
-        self.download_chapter(download_thread, max_pages, url, manga_chapter_prefix, current_chapter)
+        self.download_chapter(max_pages, url, manga_chapter_prefix, current_chapter)
 
         # Post processing
         # Release locks/semaphores
@@ -297,86 +296,22 @@ class SiteParserBase:
             raise self.MangaNotFound('No strict match found. Check query.')
         return keyword
 
-    chapter_thread_semaphore = None
-
-    class DownloadChapterThread(threading.Thread):
-        def __init__(self, site_parser, chapter):
-            threading.Thread.__init__(self)
-            self.site_parser = site_parser
-            self.chapter = chapter
-            self.is_thread_failed = False
-            self.output_idx = -1
-
-        @staticmethod
-        def init_semaphore(value):
-            global chapter_thread_semaphore
-            chapter_thread_semaphore = threading.Semaphore(value)
-
-        @staticmethod
-        def acquire_semaphore():
-            global chapter_thread_semaphore
-
-            if chapter_thread_semaphore is None:
-                raise FatalError('Semaphore not initialized')
-
-            chapter_thread_semaphore.acquire()
-
-        @staticmethod
-        def release_semaphore():
-            global chapter_thread_semaphore
-
-            if chapter_thread_semaphore is None:
-                raise FatalError('Semaphore not initialized')
-
-            chapter_thread_semaphore.release()
-
-        def run(self):
-            try:
-                self.site_parser.process_chapter(self, self.chapter)
-            except Exception as exception:
-                # Assume semaphore has not been release
-                # This assumption could be faulty if the error was thrown in the compression function
-                # The worst case is that releasing the semaphore would allow one more thread to
-                # begin downloading than it should
-                #
-                # If the semaphore was not released before the exception, it could cause deadlock
-
-                if self.site_parser.options.verbose_FLAG:
-                    traceback.print_exc()
-                chapter_thread_semaphore.release()
-                self.is_thread_failed = True
-                raise FatalError("Thread crashed while downloading chapter: %s" % str(exception))
-
     def download(self):
-        thread_pool = []
-        is_all_passed = True
-        SiteParserBase.DownloadChapterThread.init_semaphore(self.options.maxChapterThreads)
-        if self.options.verbose_FLAG:
-            print("Number of Threads: %d " % self.options.maxChapterThreads)
         """
         for loop that goes through the chapters we selected.
         """
-
         for current_chapter in self.chapters_to_download:
-            thread = SiteParserBase.DownloadChapterThread(self, current_chapter)
-            thread_pool.append(thread)
-            thread.start()
-
-        while len(thread_pool) > 0:
-            thread = thread_pool.pop()
-            while thread.isAlive():
-                # Yields control to whomever is waiting
-                time.sleep(0)
-            if is_all_passed and thread.is_thread_failed:
-                is_all_passed = False
-
-        return is_all_passed
+            try:
+                self.process_chapter(current_chapter)
+            except Exception as exception:
+                if self.options.verbose_FLAG:
+                    traceback.print_exc()
+                raise FatalError("Error crashed while downloading chapter: %s" % str(exception))
 
     def post_download_processing(self, manga_chapter_prefix, max_pages):
         if self.options.timeLogging_FLAG:
             print("%s (End Time): %s" % (manga_chapter_prefix, str(time.time())))
 
-        SiteParserBase.DownloadChapterThread.release_semaphore()
         compressed_file = self.compress(manga_chapter_prefix, max_pages)
         self.convert_chapter(compressed_file)
 

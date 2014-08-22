@@ -134,7 +134,7 @@ class Batoto(SiteParserBase):
                 self.chapters_to_download.append(i)
         return
 
-    def download_chapter(self, download_thread, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         """We ignore max_pages, because you can't regex-search that under Batoto."""
         s = get_source_code(url, self.options.proxy)
         soup = BeautifulSoup(s)
@@ -143,5 +143,5 @@ class Batoto(SiteParserBase):
         for i in ol:
             if self.options.verbose_FLAG:
                 print(i['value'])
-            self.download_image(download_thread, n, i['value'], manga_chapter_prefix)
+            self.download_image(n, i['value'], manga_chapter_prefix)
             n += 1

@@ -60,7 +60,7 @@ class EatManga(SiteParserBase):
 
         return
 
-    def download_chapter(self, download_thread, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         page_index = 0
         pages = EatManga.re_get_page.findall(get_source_code(url, self.options.proxy))
 
@@ -72,7 +72,7 @@ class EatManga(SiteParserBase):
                 print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
 
             page_url = 'http://eatmanga.com%s' % page[0]
-            self.download_image(download_thread, page[1], page_url, manga_chapter_prefix)
+            self.download_image(page[1], page_url, manga_chapter_prefix)
             page_index += 1
 
 

@@ -145,13 +145,13 @@ class MangaFox(SiteParserBase):
                 self.chapters_to_download.append(i)
         return
 
-    def download_chapter(self, download_thread, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
             if self.options.verbose_FLAG:
                 print(self.chapters[current_chapter][1] + ' | ' + 'Page %i / %i' % (page, max_pages))
 
             page_url = '%s/%i.html' % (url, page)
-            self.download_image(download_thread, page, page_url, manga_chapter_prefix)
+            self.download_image(page, page_url, manga_chapter_prefix)
 
 
 def fix_formatting(s):

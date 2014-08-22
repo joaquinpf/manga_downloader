@@ -53,13 +53,13 @@ class Starkana(SiteParserBase):
 
         return
 
-    def download_chapter(self, download_thread, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
 
         for page in range(1, max_pages + 1):
             if self.options.verbose_FLAG:
                 print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
 
-            self.download_image(download_thread, page, '%s/%s' % (url, page), manga_chapter_prefix)
+            self.download_image(page, '%s/%s' % (url, page), manga_chapter_prefix)
 
 
 def fix_formatting(s):
