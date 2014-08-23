@@ -301,12 +301,7 @@ class SiteParserBase:
         for loop that goes through the chapters we selected.
         """
         for current_chapter in self.chapters_to_download:
-            try:
-                self.process_chapter(current_chapter)
-            except Exception as exception:
-                if self.options.verbose_FLAG:
-                    traceback.print_exc()
-                raise FatalError("Error crashed while downloading chapter: %s" % str(exception))
+            self.process_chapter(current_chapter)
 
     def post_download_processing(self, manga_chapter_prefix, max_pages):
         if self.options.timeLogging_FLAG:

@@ -32,9 +32,9 @@ class MangaDownloader:
             if not os.path.exists(self.options.downloadPath):
                 os.makedirs(self.options.downloadPath)
 
-            success = self.site_parser.download()
+            self.site_parser.download()
 
-            return success, last_chap
+            return True, last_chap
 
         except OSError:
             print("""Unable to create download directory. There may be a file
