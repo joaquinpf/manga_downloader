@@ -8,6 +8,7 @@ import random
 import re
 import string
 import time
+import requests
 
 try:
     import socks
@@ -67,22 +68,12 @@ def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_r
 
     ret = None
     requested_url = None
-    request = urllib2.Request(url, headers=urlReqHeaders)
 
     while ret is None:
         try:
-            requested_url = urllib2.urlopen(request)
-            encoding = requested_url.headers.get('Content-Encoding')
+            requested_url = requests.get(url, timeout=10)
+            ret = requested_url.content
 
-            if encoding is None:
-                ret = requested_url.read()
-            else:
-                if encoding.upper() == 'GZIP':
-                    compressed_stream = io.BytesIO(requested_url.read())
-                    gzipper = gzip.GzipFile(fileobj=compressed_stream)
-                    ret = gzipper.read()
-                else:
-                    raise FatalError('Unknown HTTP Encoding returned')
         except Exception:
             if max_retries == 0:
                 break
