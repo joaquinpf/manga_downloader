@@ -39,7 +39,7 @@ class FatalError(Exception):
     pass
 
 
-IGNORE_CHARS = ['-', '(', '!', ')']
+IGNORE_CHARS = ['-', '(', '!', ')', '.']
 
 
 def fix_formatting(s, space_token):

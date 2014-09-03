@@ -21,7 +21,7 @@ class MangaHere(SiteParserBase):
     # re_get_chapters = re.compile('"(.*?Ch.[\d.]*)[^"]*","([^"]*)"')
     re_get_image = re.compile('<img src="([^"]*.jpg)[^"]*"')
     re_get_max_pages = re.compile('var total_pages = ([^;]*?);')
-    re_non_decimal = re.compile(r'[^\d.]+')
+    re_non_decimal = re.compile(r'[^\d|^\.]+')
 
     def __init__(self, options):
         SiteParserBase.__init__(self, options)
