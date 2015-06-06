@@ -30,7 +30,7 @@ class Batoto(SiteParserBase):
     re_get_image = re.compile("<img id=\"comic_page\".*?src=\"([^\"]+)\"")
 
     def __init__(self, options):
-        SiteParserBase.__init__(self, options, "http://www.batoto.net")
+        SiteParserBase.__init__(self, options, "http://bato.to")
 
     def get_next_url(self, c):
         s = get_source_code(c, self.options.proxy)

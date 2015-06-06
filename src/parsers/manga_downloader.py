@@ -21,7 +21,7 @@ class MangaDownloader:
     def download_new_chapters(self):
         try:
             if not self.site_parser.is_site_up():
-                print("%S seems to be down, won't try to download for now" % self.site_parser.options.site)
+                print("%s seems to be down, won't try to download for now" % self.site_parser.options.site)
                 return False, None
 
             self.site_parser.parse_site()
