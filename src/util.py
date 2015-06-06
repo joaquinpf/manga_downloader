@@ -104,3 +104,8 @@ def zero_fill_str(input_string, num_of_zeros):
                   # string formatting trick to zero-pad
                   ('%0' + str(num_of_zeros) + 'i') % int(match_obj.group(0)),
                   input_string)
+
+
+def is_site_up(url):
+    resp = requests.head(url)
+    return True if resp.status_code == 200 else False

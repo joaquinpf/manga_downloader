@@ -12,7 +12,6 @@ from util import get_source_code
 
 # ####################
 
-
 class MangaFox(SiteParserBase):
     re_get_series = re.compile('a href="http://.*?mangafox.*?/manga/([^/]*)/[^"]*?" class=[^>]*>([^<]*)</a>')
     # re_get_series = re.compile('a href="/manga/([^/]*)/[^"]*?" class=[^>]*>([^<]*)</a>')
@@ -21,7 +20,7 @@ class MangaFox(SiteParserBase):
     re_get_max_pages = re.compile('var total_pages=([^;]*?);')
 
     def __init__(self, options):
-        SiteParserBase.__init__(self, options)
+        SiteParserBase.__init__(self, options, 'http://mangafox.me')
 
     def parse_site(self):
         """
@@ -31,7 +30,7 @@ class MangaFox(SiteParserBase):
         print('Beginning MangaFox check: %s' % self.options.manga)
 
         # jump straight to expected URL and test if manga removed
-        url = 'http://mangafox.me/manga/%s/' % fix_formatting(self.options.manga)
+        url = '%s/manga/%s/' % (self.base_url, self.fix_formatting(self.options.manga))
         if self.options.verbose_FLAG:
             print(url)
 
@@ -40,8 +39,8 @@ class MangaFox(SiteParserBase):
         if redirect_url != url or source is None or 'the page you have requested cannot be found' in source:
             # Could not find the manga page by guessing
             # Use the website search
-            url = 'http://mangafox.me/search.php?name_method=bw&name=%s&is_completed=&advopts=1' % '+'.join(
-                self.options.manga.split())
+            url = '%s/search.php?name_method=bw&name=%s&is_completed=&advopts=1' % (self.base_url, '+'.join(
+                self.options.manga.split()))
             if self.options.verbose_FLAG:
                 print(url)
             try:
@@ -51,8 +50,8 @@ class MangaFox(SiteParserBase):
                     series_results = MangaFox.re_get_series.findall(source)
 
                 if 0 == len(series_results):
-                    url = 'http://mangafox.me/search.php?name_method=cw&name=%s&is_completed=&advopts=1' % '+'.join(
-                        self.options.manga.split())
+                    url = '%s/search.php?name_method=cw&name=%s&is_completed=&advopts=1' % (self.base_url, '+'.join(
+                        self.options.manga.split()))
                     if self.options.verbose_FLAG:
                         print(url)
                     source = get_source_code(url, self.options.proxy)
@@ -66,7 +65,7 @@ class MangaFox(SiteParserBase):
                 keyword = self.select_from_results(series_results)
                 if self.options.verbose_FLAG:
                     print ("Keyword: %s" % keyword)
-                url = 'http://mangafox.me/manga/%s/' % keyword
+                url = self.base_url % keyword
                 if self.options.verbose_FLAG:
                     print ("URL: %s" % url)
                 source = get_source_code(url, self.options.proxy)
@@ -116,14 +115,14 @@ class MangaFox(SiteParserBase):
                         lower_range = i + 1
 
                 self.chapters[i] = (
-                    'http://mangafox.me/manga/%s/%s' % (keyword, self.chapters[i]), self.chapters[i], self.chapters[i])
+                    '%s/manga/%s/%s' % (self.base_url, keyword, self.chapters[i]), self.chapters[i], self.chapters[i])
 
         else:
             for i in range(0, len(self.chapters)):
                 if self.options.verbose_FLAG:
                     print("%s %s" % (self.chapters[i][0], self.chapters[i][1]))
                 self.chapters[i] = (
-                    'http://mangafox.me/manga/%s/%s/%s' % (keyword, self.chapters[i][0], self.chapters[i][1]),
+                    '%s/manga/%s/%s/%s' % (self.base_url, keyword, self.chapters[i][0], self.chapters[i][1]),
                     self.chapters[i][0] + "." + self.chapters[i][1], self.chapters[i][1])
                 if not self.options.auto:
                     print('(%i) %s' % (i + 1, self.chapters[i][1]))
@@ -153,14 +152,17 @@ class MangaFox(SiteParserBase):
             page_url = '%s/%i.html' % (url, page)
             self.download_image(page, page_url, manga_chapter_prefix)
 
+    def fix_formatting(self, s):
 
-def fix_formatting(s):
+        for i in string.punctuation:
+            s = s.replace(i, " ")
 
-    for i in string.punctuation:
-        s = s.replace(i, " ")
+        p = re.compile('\s+')
+        s = p.sub(' ', s)
 
-    p = re.compile('\s+')
-    s = p.sub(' ', s)
+        s = s.lower().strip().replace(' ', '_')
+        return s
 
-    s = s.lower().strip().replace(' ', '_')
-    return s
+#Register plugin
+def setup(app):
+    app.register_plugin('mangafox', MangaFox)

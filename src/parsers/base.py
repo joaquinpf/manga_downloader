@@ -40,7 +40,8 @@ class SiteParserBase:
 
             # ####
 
-    def __init__(self, options):
+    def __init__(self, options, base_url):
+        self.base_url = base_url
         self.options = options
         self.chapters = []
         self.chapters_to_download = []
@@ -328,3 +329,6 @@ class SiteParserBase:
                 if compressed_file is not None and self.options.outputDir is not None:
                     ConvertFile.convert(self.options.outputMgr, compressed_file, self.options.outputDir,
                                         self.options.device, self.options.verbose_FLAG)
+
+    def is_site_up(self):
+        return is_site_up(self.base_url)

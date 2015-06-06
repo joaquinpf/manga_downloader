@@ -18,7 +18,6 @@ from util import get_source_code
 
 # ####################
 
-
 class MangaReader(SiteParserBase):
     re_get_series = re.compile('<li><a href="([^"]*)">([^<]*)</a>')
     re_get_chapters = re.compile('<a href="([^"]*)">([^<]*)</a>([^<]*)</td>')
@@ -27,19 +26,19 @@ class MangaReader(SiteParserBase):
     re_get_max_pages = re.compile('</select> of (\d*)(\s)*</div>')
 
     def __init__(self, options):
-        SiteParserBase.__init__(self, options)
+        SiteParserBase.__init__(self, options, 'http://www.mangareader.net')
 
     def parse_site(self):
         print('Beginning MangaReader check: %s' % self.options.manga)
 
-        url = 'http://www.mangareader.net/alphabetical'
+        url = '%s/alphabetical' % self.base_url
 
         source = get_source_code(url, self.options.proxy)
         all_series = MangaReader.re_get_series.findall(source[source.find('series_col'):])
 
         keyword = self.select_from_results(all_series)
 
-        url = 'http://www.mangareader.net%s' % keyword
+        url = (self.base_url + '%s') % keyword
         source = get_source_code(url, self.options.proxy)
 
         self.chapters = MangaReader.re_get_chapters.findall(source)
@@ -49,7 +48,7 @@ class MangaReader(SiteParserBase):
         for i in range(0, len(self.chapters)):
             chapter_number = self.chapters[i][1].replace(self.options.manga, '').strip()
             self.chapters[i] = (
-                'http://www.mangareader.net%s' % self.chapters[i][0], '%s%s' % (chapter_number, self.chapters[i][2]),
+                '%s%s' % (self.chapters[i][0], self.base_url), '%s%s' % (chapter_number, self.chapters[i][2]),
                 chapter_number)
             if not self.options.auto:
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
@@ -78,3 +77,7 @@ class MangaReader(SiteParserBase):
             page_url = 'http://www.mangareader.net' + page[0]
             self.download_image(page[1], page_url, manga_chapter_prefix)
             page_index += 1
+
+#Register plugin
+def setup(app):
+    app.register_plugin('mangareader', MangaReader)

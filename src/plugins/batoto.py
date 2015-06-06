@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from parsers.base import SiteParserBase
 from util import get_source_code
 
-
 class Batoto(SiteParserBase):
     class PointlessThing2:
         def __init__(self):
@@ -31,7 +30,7 @@ class Batoto(SiteParserBase):
     re_get_image = re.compile("<img id=\"comic_page\".*?src=\"([^\"]+)\"")
 
     def __init__(self, options):
-        SiteParserBase.__init__(self, options)
+        SiteParserBase.__init__(self, options, "http://www.batoto.net")
 
     def get_next_url(self, c):
         s = get_source_code(c, self.options.proxy)
@@ -42,7 +41,7 @@ class Batoto(SiteParserBase):
     def parse_site(self):
         print("Beginning Batoto check: {}".format(self.options.manga))
 
-        url = "http://www.batoto.net/search?name={}&name_cond=c".format('+'.join(self.options.manga.split()))
+        url = "{}/search?name={}&name_cond=c".format(self.base_url, '+'.join(self.options.manga.split()))
         s = get_source_code(url, self.options.proxy)
         soup = BeautifulSoup(s)
         a = soup.find("div", id="comic_search_results")
@@ -81,7 +80,7 @@ class Batoto(SiteParserBase):
                 c = float(re.search("ch([\d.]+)", u).group(1))
                 c = str(int(c)) if c.is_integer() else str(c)
             except AttributeError:
-                c = 0
+                c = '0'
             tu = (u, t, c, g)
             if len(cnum) == 0 or cnum[0][3] == c:
                 cnum.append(tu)
@@ -145,3 +144,7 @@ class Batoto(SiteParserBase):
                 print(i['value'])
             self.download_image(n, i['value'], manga_chapter_prefix)
             n += 1
+
+#Register plugin
+def setup(app):
+    app.register_plugin('batoto', Batoto)

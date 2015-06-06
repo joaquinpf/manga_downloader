@@ -16,10 +16,14 @@ from parsers.factory import SiteParserFactory
 class MangaDownloader:
     def __init__(self, options):
         self.options = options
-        self.site_parser = SiteParserFactory.get_instance(options)
+        self.site_parser = SiteParserFactory.Instance().get_instance(options)
 
     def download_new_chapters(self):
         try:
+            if not self.site_parser.is_site_up():
+                print("%S seems to be down, won't try to download for now" % self.site_parser.options.site)
+                return False, None
+
             self.site_parser.parse_site()
             last_chap = None
             for current_chapter in self.site_parser.chapters:

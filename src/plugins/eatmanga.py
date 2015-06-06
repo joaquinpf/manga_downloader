@@ -7,7 +7,6 @@ from util import get_source_code
 
 from collections import OrderedDict
 
-
 class EatManga(SiteParserBase):
     re_get_chapters = re.compile('<a href="([^"]*)" title="([^"]*)">([^<]*)</a>([^<]*)</th>')
     re_get_max_pages = re.compile('</select> of (\d*)')
@@ -15,11 +14,11 @@ class EatManga(SiteParserBase):
     re_get_image = re.compile('img id="eatmanga_image.*" src="([^"]*)')
 
     def __init__(self, options):
-        SiteParserBase.__init__(self, options)
+        SiteParserBase.__init__(self, options, 'http://eatmanga.com')
 
     def parse_site(self):
         print('Beginning EatManga check: %s' % self.options.manga)
-        url = 'http://eatmanga.com/Manga-Scan/%s' % fix_formatting(self.options.manga)
+        url = '%s/Manga-Scan/%s' % (self.base_url, self.fix_formatting(self.options.manga))
         if self.options.verbose_FLAG:
             print(url)
 
@@ -40,7 +39,7 @@ class EatManga(SiteParserBase):
                 continue
 
             chapter_number = self.chapters[i][2].replace(self.options.manga, '').strip()
-            self.chapters[i] = ('http://eatmanga.com%s' % self.chapters[i][0], chapter_number, chapter_number)
+            self.chapters[i] = ('%s%s' % (self.chapters[i][0], self.base_url), chapter_number, chapter_number)
             if not self.options.auto:
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
             else:
@@ -75,11 +74,13 @@ class EatManga(SiteParserBase):
             self.download_image(page[1], page_url, manga_chapter_prefix)
             page_index += 1
 
+    def fix_formatting(self, s):
+        p = re.compile('\s+')
+        s = p.sub(' ', s)
 
-def fix_formatting(s):
-    p = re.compile('\s+')
-    s = p.sub(' ', s)
+        s = s.strip().replace(' ', '-')
+        return s
 
-    s = s.strip().replace(' ', '-')
-    return s
-
+#Register plugin
+def setup(app):
+    app.register_plugin('eatmanga', EatManga)
