@@ -52,7 +52,7 @@ class MangaPanda(SiteParserBase):
             if not self.options.auto:
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
             else:
-                if self.options.lastDownloaded == self.chapters[i][1]:
+                if self.options.lastDownloaded == self.chapters[i][1].decode('utf-8'):
                     lower_range = i + 1
 
         upper_range = len(self.chapters)
@@ -69,7 +69,7 @@ class MangaPanda(SiteParserBase):
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in MangaPanda.re_get_page.findall(get_source_code(url, self.options.proxy)):
-            page_url = 'http://www.mangapanda.com' + page[0]
+            page_url = 'http://www.mangapanda.com%s' % page[0]
             self.download_image(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin

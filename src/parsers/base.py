@@ -133,7 +133,7 @@ class SiteParserBase:
         """
 
         if self.options.verbose_FLAG:
-            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
+            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
 
         # while loop to protect against server denies for requests
         # note that disconnects are already handled by getSourceCode, we use a
