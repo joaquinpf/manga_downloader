@@ -47,7 +47,7 @@ class MangaPanda(SiteParserBase):
         for i in range(0, len(self.chapters)):
             chapter_number = self.chapters[i][1].replace(self.options.manga, '').strip()
             self.chapters[i] = (
-                '%s%s' % (self.chapters[i][0], self.base_url), '%s%s' % (chapter_number, self.chapters[i][2]),
+                '%s%s' % (self.base_url, self.chapters[i][0]), '%s%s' % (chapter_number, self.chapters[i][2]),
                 chapter_number)
             if not self.options.auto:
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
