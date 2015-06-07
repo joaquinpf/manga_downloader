@@ -3,7 +3,7 @@
 import re
 
 from parsers.base import SiteParserBase
-from util import get_source_code
+from util import get_source_code, fix_formatting
 
 from collections import OrderedDict
 
@@ -16,11 +16,11 @@ class EatManga(SiteParserBase):
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://eatmanga.com')
 
-    def parse_site(self):
-        print('Beginning EatManga check: %s' % self.options.manga)
-        url = '%s/Manga-Scan/%s' % (self.base_url, self.fix_formatting(self.options.manga))
-        if self.options.verbose_FLAG:
-            print(url)
+    def get_manga_url(self):
+        url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        return url
+
+    def parse_site(self, url):
 
         source = get_source_code(url, self.options.proxy)
 
@@ -60,27 +60,15 @@ class EatManga(SiteParserBase):
         return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
-        page_index = 0
         pages = EatManga.re_get_page.findall(get_source_code(url, self.options.proxy))
 
         # Remove duplicate pages if any and ensure order
         pages = list(OrderedDict.fromkeys(pages))
 
         for page in pages:
-            if self.options.verbose_FLAG:
-                print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
-
             page_url = 'http://eatmanga.com%s' % page[0]
-            self.download_image(page[1], page_url, manga_chapter_prefix)
-            page_index += 1
-
-    def fix_formatting(self, s):
-        p = re.compile('\s+')
-        s = p.sub(' ', s)
-
-        s = s.strip().replace(' ', '-')
-        return s
+            self.download_image(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):
-    app.register_plugin('eatmanga', EatManga)
+    app.register_plugin('EatManga', EatManga)

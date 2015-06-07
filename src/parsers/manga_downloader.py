@@ -4,11 +4,14 @@
 
 import os
 import traceback
+import sys
 
 # ####################
 
 from parsers.base import SiteParserBase
 from parsers.factory import SiteParserFactory
+from util import is_site_up
+from termcolor import cprint
 
 # ####################
 
@@ -20,17 +23,27 @@ class MangaDownloader:
 
     def download_new_chapters(self):
         try:
-            if not self.site_parser.is_site_up():
-                print("%s seems to be down, won't try to download for now" % self.site_parser.options.site)
+            if not is_site_up(self.site_parser.base_url):
+                cprint("Warn: %s seems to be down, won't try to download for now" % self.site_parser.options.site, 'yellow', attrs=['bold'], file=sys.stderr)
                 return False, None
 
-            self.site_parser.parse_site()
+            print("Beginning '%s' check for '%s'" % (self.options.site, self.options.manga))
+
+            url = self.site_parser.get_manga_url()
+            if self.options.verbose_FLAG:
+                print("Will check: %s" % url)
+
+            if not is_site_up(url):
+                cprint("Warn: Manga url seems to be down in '%s', was it removed? Won't try to download for now" % self.site_parser.options.site, 'yellow', attrs=['bold'], file=sys.stderr)
+                return False, None
+
+            self.site_parser.parse_site(url)
             last_chap = None
             for current_chapter in self.site_parser.chapters:
                 last_chap = current_chapter[1]
 
             if not last_chap:
-                raise Exception('Error: Couldnt fetch the last chapter number')
+                raise Exception("Error: Couldn't fetch the last chapter number")
 
             # create download directory if not found
             if not os.path.exists(self.options.downloadPath):
@@ -41,19 +54,21 @@ class MangaDownloader:
             return True, last_chap
 
         except OSError:
-            print("""Unable to create download directory. There may be a file
+            cprint("""Error: Unable to create download directory. There may be a file
                 with the same name, or you may not have permissions to write
-                there.""")
+                there.""", 'red', attrs=['bold'], file=sys.stderr)
             raise
         except self.site_parser.NoUpdates:
-            print "Manga (" + self.options.manga + ") up-to-date."
+            cprint("Manga '%s' up-to-date." % self.options.manga, 'green', attrs=['bold'], file=sys.stdout)
             return False, 0
         except SiteParserBase.MangaNotFound:
-            print "Error: Manga (" + self.options.manga + ") not found, temporary?"
+            cprint("Warn: Manga '%s' not found, temporary?" % self.options.manga, 'yellow', attrs=['bold'], file=sys.stderr)
             if self.options.verbose_FLAG:
                 traceback.print_exc()
             return False, 0
+        except KeyboardInterrupt:
+            raise
         except Exception:
-            print "Error: Unknown error trying to download manga (" + self.options.manga + ")"
-            traceback.print_exc()
+            cprint("Error: Unknown error trying to download manga '%s'" % self.options.manga, 'red', attrs=['bold'], file=sys.stderr)
+            cprint(traceback.format_exc(), 'red', attrs=['bold'], file=sys.stderr)
             return False, 0

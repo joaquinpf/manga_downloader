@@ -21,6 +21,9 @@ import optparse
 import os
 import sys
 import copy
+import os.path
+from colorama import init
+from parsers.factory import SiteParserFactory
 
 # #########
 
@@ -28,23 +31,13 @@ from parsers.manga_downloader import MangaDownloader
 from util import fix_formatting, is_image_lib_available
 from json_parser import MangaJsonParser
 from output_manager.progress_bar_manager import ProgressBarManager
+
 # #########
 
 VERSION = 'v0.8.8'
-
-siteDict = {
-    '': '[mf]',
-    '1': '[mf]',
-    '2': '[mr]',
-    '3': '[mp]',
-    '4': '[mh]',
-    '5': '[em]',
-    '6': '[sk]',
-    '7': '[bt]',
-}
+siteDict = {}
 
 # #########
-
 
 class InvalidSite(Exception):
     pass
@@ -55,10 +48,18 @@ def print_license_info():
     print("Icon:      Copyright (c) 2006. GNU Free Document License v1.2 (Author:Kasuga).")
     print("           http://ja.wikipedia.org/wiki/%E5%88%A9%E7%94%A8%E8%80%85:Kasuga\n")
 
-
 # #########
 
 def main():
+    # Initialize Colorama
+    init()
+
+    #Load available plugins
+    i = 1
+    for plugin_name in SiteParserFactory.Instance().plugins:
+        siteDict[str(i)] = plugin_name
+        i += 1
+
     print_license_info()
 
     # for easier parsing, adds free --help and --version
@@ -246,14 +247,9 @@ def main():
                 series_options.downloadPath = os.path.realpath(series_options.downloadPath) + os.sep
 
                 # site selection
-                print('\nWhich site?'
-                      '\n(1) MangaFox'
-                      '\n(2) MangaReader'
-                      '\n(3) MangaPanda'
-                      '\n(4) MangaHere'
-                      '\n(5) EatManga'
-                      '\n(6) Starkana'
-                      '\n(7) Batoto\n')
+                print('\nWhich site?')
+                for index in siteDict:
+                    print('(%s) %s' % (index, siteDict[index]))
 
                 # Python3 fix - removal of raw_input()
                 try:
@@ -268,6 +264,9 @@ def main():
 
                 serie = MangaDownloader(series_options)
                 serie.download_new_chapters()
+
+    except KeyboardInterrupt:
+        sys.exit(0)
 
     finally:
         # Must always stop the manager

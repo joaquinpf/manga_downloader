@@ -3,7 +3,7 @@
 import re
 
 from parsers.base import SiteParserBase
-from util import get_source_code
+from util import get_source_code, fix_formatting
 
 class Starkana(SiteParserBase):
     # re_get_page = re.compile("<option.*?value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
@@ -15,11 +15,11 @@ class Starkana(SiteParserBase):
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://starkana.com')
 
-    def parse_site(self):
-        print('Beginning Starkana check: %s' % self.options.manga)
-        url = '%s/manga/%s/%s' % (self.base_url, self.options.manga[0], self.fix_formatting(self.options.manga))
-        if self.options.verbose_FLAG:
-            print(url)
+    def get_manga_url(self):
+        url = '%s/manga/%s/%s' % (self.base_url, self.options.manga[0], fix_formatting(self.options.manga, '_', remove_special_chars=False, lower_case=True, use_ignore_chars=False))
+        return url
+
+    def parse_site(self, url):
 
         source = get_source_code(url, self.options.proxy)
 
@@ -53,20 +53,9 @@ class Starkana(SiteParserBase):
         return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
-
         for page in range(1, max_pages + 1):
-            if self.options.verbose_FLAG:
-                print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
-
-            self.download_image(page, '%s/%s' % (url, page), manga_chapter_prefix)
-
-    def fix_formatting(self, s):
-        p = re.compile('\s+')
-        s = p.sub(' ', s)
-
-        s = s.strip().replace(' ', '_')
-        return s
+            self.download_image(page, '%s/%s' % (url, page), manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):
-    app.register_plugin('starkana', Starkana)
+    app.register_plugin('Starkana', Starkana)

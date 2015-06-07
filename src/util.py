@@ -42,15 +42,19 @@ class FatalError(Exception):
 IGNORE_CHARS = ['-', '(', '!', ')', '.']
 
 
-def fix_formatting(s, space_token):
+def fix_formatting(s, space_token, remove_special_chars=True, lower_case=False, use_ignore_chars=True):
     """
     Special character fix for filesystem paths.
     """
 
-    for i in string.punctuation:
-        if i not in IGNORE_CHARS and i != space_token:
-            s = s.replace(i, '')
-    return s.lstrip(space_token).strip().replace(' ', space_token)
+    formatted = s.lstrip(space_token).strip().replace(' ', space_token)
+
+    if remove_special_chars:
+        for i in string.punctuation:
+            if (i not in IGNORE_CHARS or not use_ignore_chars) and i != space_token:
+                formatted = formatted.replace(i, '')
+
+    return formatted.lower() if lower_case else formatted
 
 
 def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_retry_time=3):
@@ -73,6 +77,9 @@ def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_r
         try:
             requested_url = requests.get(url, timeout=10)
             ret = requested_url.content
+
+        except KeyboardInterrupt:
+            raise
 
         except Exception:
             if max_retries == 0:
@@ -108,4 +115,4 @@ def zero_fill_str(input_string, num_of_zeros):
 
 def is_site_up(url):
     resp = requests.head(url)
-    return True if resp.status_code == 200 else False
+    return True if resp.status_code in [200, 301] else False

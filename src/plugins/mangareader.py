@@ -28,17 +28,16 @@ class MangaReader(SiteParserBase):
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://www.mangareader.net')
 
-    def parse_site(self):
-        print('Beginning MangaReader check: %s' % self.options.manga)
-
+    def get_manga_url(self):
         url = '%s/alphabetical' % self.base_url
-
         source = get_source_code(url, self.options.proxy)
         all_series = MangaReader.re_get_series.findall(source[source.find('series_col'):])
-
         keyword = self.select_from_results(all_series)
-
         url = (self.base_url + '%s') % keyword
+        return url
+
+    def parse_site(self, url):
+
         source = get_source_code(url, self.options.proxy)
 
         self.chapters = MangaReader.re_get_chapters.findall(source)
@@ -69,15 +68,10 @@ class MangaReader(SiteParserBase):
         return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
-        page_index = 0
         for page in MangaReader.re_get_page.findall(get_source_code(url, self.options.proxy)):
-            if self.options.verbose_FLAG:
-                print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
-
             page_url = 'http://www.mangareader.net' + page[0]
-            self.download_image(page[1], page_url, manga_chapter_prefix)
-            page_index += 1
+            self.download_image(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):
-    app.register_plugin('mangareader', MangaReader)
+    app.register_plugin('MangaReader', MangaReader)

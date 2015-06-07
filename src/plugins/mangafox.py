@@ -8,7 +8,7 @@ import string
 # ####################
 
 from parsers.base import SiteParserBase
-from util import get_source_code
+from util import get_source_code, fix_formatting
 
 # ####################
 
@@ -22,17 +22,11 @@ class MangaFox(SiteParserBase):
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://mangafox.me')
 
-    def parse_site(self):
-        """
-        Parses list of chapters and URLs associated with each one for the given manga and site.
-        """
+    def get_manga_url(self):
+        url = '%s/manga/%s/' % (self.base_url, fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        return url
 
-        print('Beginning MangaFox check: %s' % self.options.manga)
-
-        # jump straight to expected URL and test if manga removed
-        url = '%s/manga/%s/' % (self.base_url, self.fix_formatting(self.options.manga))
-        if self.options.verbose_FLAG:
-            print(url)
+    def parse_site(self, url):
 
         source, redirect_url = get_source_code(url, self.options.proxy, True)
 
@@ -146,23 +140,9 @@ class MangaFox(SiteParserBase):
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
-            if self.options.verbose_FLAG:
-                print(self.chapters[current_chapter][1] + ' | ' + 'Page %i / %i' % (page, max_pages))
-
             page_url = '%s/%i.html' % (url, page)
-            self.download_image(page, page_url, manga_chapter_prefix)
-
-    def fix_formatting(self, s):
-
-        for i in string.punctuation:
-            s = s.replace(i, " ")
-
-        p = re.compile('\s+')
-        s = p.sub(' ', s)
-
-        s = s.lower().strip().replace(' ', '_')
-        return s
+            self.download_image(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):
-    app.register_plugin('mangafox', MangaFox)
+    app.register_plugin('MangaFox', MangaFox)

@@ -10,7 +10,7 @@ import time
 # ####################
 
 from parsers.base import SiteParserBase
-from util import get_source_code
+from util import get_source_code, fix_formatting, is_site_up
 
 # ####################
 
@@ -23,24 +23,17 @@ class MangaHere(SiteParserBase):
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://www.mangahere.co')
 
-    def parse_site(self):
-        """
-        Parses list of chapters and URLs associated with each one for the given manga and site.
-        """
+    def get_manga_url(self):
+        url = '%s/manga/%s/' % (self.base_url, fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        return url
 
-        print('Beginning MangaHere check: %s' % self.options.manga)
+    def parse_site(self, url):
 
-        # jump straight to expected URL and test if manga removed
-        url = '%s/manga/%s/' % (self.base_url, self.fix_formatting(self.options.manga))
-        if self.options.verbose_FLAG:
-            print(url)
         source = get_source_code(url, self.options.proxy)
 
         if source is None or 'the page you have requested can' in source:
             # do a 'begins-with' search, then a 'contains' search
             url = '%s/search.php?name=%s' % (self.base_url, '+'.join(self.options.manga.split()))
-            if self.options.verbose_FLAG:
-                print(url)
 
             try:
                 source = get_source_code(url, self.options.proxy)
@@ -54,8 +47,6 @@ class MangaHere(SiteParserBase):
 
                 if 0 == len(series_results):
                     url = '%s/search.php?name=%s' % (self.base_url, '+'.join(self.options.manga.split()))
-                    if self.options.verbose_FLAG:
-                        print(url)
                     source = get_source_code(url, self.options.proxy)
                     if source is not None:
                         series_results = MangaHere.re_get_series.findall(source)
@@ -65,18 +56,12 @@ class MangaHere(SiteParserBase):
                 raise self.MangaNotFound('It doesn\'t exist, or cannot be resolved by autocorrect.')
             else:
                 keyword = self.select_from_results(series_results)
-                if self.options.verbose_FLAG:
-                    print ("Keyword: %s" % keyword)
-                url = self.base_url % keyword
-                if self.options.verbose_FLAG:
-                    print(url)
+                url = '%s/manga/%s/' % (self.base_url, keyword)
                 source = get_source_code(url, self.options.proxy)
 
         else:
             # The Guess worked
-            keyword = self.fix_formatting(self.options.manga)
-            if self.options.verbose_FLAG:
-                print ("Keyword: %s" % keyword)
+            keyword = fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False)
 
         # other check for manga removal if our initial guess for the name was wrong
         if 'it is not available in.' in source:
@@ -97,8 +82,6 @@ class MangaHere(SiteParserBase):
             'a.*?href="http://.*?mangahere.*?/manga/%s/(v[\d]+)/(c[\d]+(\.[\d]+)?)/[^"]*?"' % keyword)
         self.chapters = re_get_chapters.findall(source)
         if not self.chapters:
-            if self.options.verbose_FLAG:
-                print ("Trying chapter only regex")
             is_chapter_only = True
             re_get_chapters = re.compile(
                 'a.*?href="http://.*?mangahere.*?/manga/%s/(c[\d]+(\.[\d]+)?)/[^"]*?"' % keyword)
@@ -133,10 +116,7 @@ class MangaHere(SiteParserBase):
 
         upper_range = len(self.chapters)
 
-        # Validate whether the last chapter is a
-        if self.options.verbose_FLAG:
-            print(self.chapters[upper_range - 1])
-            print("Validating chapter: %s" % self.chapters[upper_range - 1][0])
+        # Validate whether the last chapter is available
         source = get_source_code(self.chapters[upper_range - 1][0], self.options.proxy)
 
         if ('not available yet' in source) or ('Sorry, the page you have requested can’t be found' in source):
@@ -164,41 +144,27 @@ class MangaHere(SiteParserBase):
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
-            if self.options.verbose_FLAG:
-                print(self.chapters[current_chapter][1] + ' | ' + 'Page %i / %i' % (page, max_pages))
-
             page_url = '%s/%i.html' % (url, page)
-            self.download_image(page, page_url, manga_chapter_prefix)
-
-    def fix_formatting(self, s):
-
-        for i in string.punctuation:
-            s = s.replace(i, " ")
-
-        p = re.compile('\s+')
-        s = p.sub(' ', s)
-
-        s = s.lower().strip().replace(' ', '_')
-        return s
+            self.download_image(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
 
     def chapter_compare(self, x, y):
-            non_decimal = re.compile(r'[^\d.]+')
+        non_decimal = re.compile(r'[^\d.]+')
 
-            x_vol = float(non_decimal.sub('', x[0]))
-            y_vol = float(non_decimal.sub('', y[0]))
-            if x_vol != y_vol:
-                return 1 if x_vol > y_vol else -1
+        x_vol = float(non_decimal.sub('', x[0]))
+        y_vol = float(non_decimal.sub('', y[0]))
+        if x_vol != y_vol:
+            return 1 if x_vol > y_vol else -1
 
-            if not x[1] or not y[1]:
-                return 0
-
-            x_chapter = float(non_decimal.sub('', x[1]))
-            y_chapter = float(non_decimal.sub('', y[1]))
-            if x_chapter != y_chapter:
-                return 1 if x_chapter > y_chapter else -1
-
+        if not x[1] or not y[1]:
             return 0
+
+        x_chapter = float(non_decimal.sub('', x[1]))
+        y_chapter = float(non_decimal.sub('', y[1]))
+        if x_chapter != y_chapter:
+            return 1 if x_chapter > y_chapter else -1
+
+        return 0
 
 #Register plugin
 def setup(app):
-    app.register_plugin('mangahere', MangaHere)
+    app.register_plugin('MangaHere', MangaHere)

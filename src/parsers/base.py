@@ -72,6 +72,9 @@ class SiteParserBase:
     def parse_site(self):
         raise NotImplementedError('Should have implemented this')
 
+    def get_manga_url(self):
+        raise NotImplementedError('Should have implemented this')
+
     # ####
 
     def compress(self, manga_chapter_prefix, max_pages):
@@ -114,12 +117,15 @@ class SiteParserBase:
         compressed_file = os.path.join(self.options.downloadPath, compressed_file)
         return compressed_file
 
-    def download_image(self, page, page_url, manga_chapter_prefix):
+    def download_image(self, page, page_url, manga_chapter_prefix, max_pages, current_chapter):
         """
         Given a page URL to download from, it searches using self.imageRegex
         to parse out the image URL, and downloads and names it using
         manga_chapter_prefix and page.
         """
+
+        if self.options.verbose_FLAG:
+            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page[1], max_pages))
 
         # while loop to protect against server denies for requests
         # note that disconnects are already handled by getSourceCode, we use a
@@ -329,6 +335,3 @@ class SiteParserBase:
                 if compressed_file is not None and self.options.outputDir is not None:
                     ConvertFile.convert(self.options.outputMgr, compressed_file, self.options.outputDir,
                                         self.options.device, self.options.verbose_FLAG)
-
-    def is_site_up(self):
-        return is_site_up(self.base_url)
