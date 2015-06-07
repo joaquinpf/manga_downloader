@@ -63,12 +63,14 @@ class MangaDownloader:
             return False, 0
         except SiteParserBase.MangaNotFound:
             cprint("Warn: Manga '%s' not found, temporary?" % self.options.manga, 'yellow', attrs=['bold'], file=sys.stderr)
-            if self.options.verbose_FLAG:
-                traceback.print_exc()
+            return False, 0
+        except SiteParserBase.MangaLicenced:
+            cprint("Warn: Manga '%s' was licenced and removed from the site" % self.options.manga, 'yellow', attrs=['bold'], file=sys.stderr)
             return False, 0
         except KeyboardInterrupt:
             raise
         except Exception:
             cprint("Error: Unknown error trying to download manga '%s'" % self.options.manga, 'red', attrs=['bold'], file=sys.stderr)
-            cprint(traceback.format_exc(), 'red', attrs=['bold'], file=sys.stderr)
+            if self.options.verbose_FLAG:
+                cprint(traceback.format_exc(), 'red', attrs=['bold'], file=sys.stderr)
             return False, 0

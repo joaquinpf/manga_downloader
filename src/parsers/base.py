@@ -29,6 +29,14 @@ class SiteParserBase:
         def __str__(self):
             return self.error_msg
 
+    class MangaLicenced(Exception):
+
+        def __init__(self, error_msg=''):
+            self.error_msg = 'Manga was licenced and removed from the site. %s' % error_msg
+
+        def __str__(self):
+            return self.error_msg
+
     # XML file config reports nothing to do
     class NoUpdates(Exception):
 

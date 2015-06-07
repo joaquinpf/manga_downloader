@@ -64,8 +64,8 @@ class MangaHere(SiteParserBase):
             keyword = fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False)
 
         # other check for manga removal if our initial guess for the name was wrong
-        if 'it is not available in.' in source:
-            raise self.MangaNotFound('It has been removed.')
+        if 'it is not available in' in source or "It's not available in" in source:
+            raise self.MangaLicenced('It has been removed.')
 
         # that's nice of them
         # url = 'http://www.mangahere.com/cache/manga/%s/chapters.js' % keyword
