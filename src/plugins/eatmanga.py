@@ -17,7 +17,7 @@ class EatManga(SiteParserBase):
         SiteParserBase.__init__(self, options, 'http://eatmanga.com')
 
     def get_manga_url(self):
-        url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=False, use_ignore_chars=False))
         return url
 
     def parse_site(self, url):
@@ -39,7 +39,7 @@ class EatManga(SiteParserBase):
                 continue
 
             chapter_number = self.chapters[i][2].replace(self.options.manga, '').strip()
-            self.chapters[i] = ('%s%s' % (self.chapters[i][0], self.base_url), chapter_number, chapter_number)
+            self.chapters[i] = ('%s%s' % (self.base_url, self.chapters[i][0]), chapter_number, chapter_number)
             if not self.options.auto:
                 print('(%i) %s' % (i + 1, self.chapters[i][1]))
             else:
