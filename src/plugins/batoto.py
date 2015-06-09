@@ -89,6 +89,9 @@ class Batoto(SiteParserBase):
 
         self.chapters.reverse()
 
+        if self.chapters == [[]]:
+            raise self.MangaLicenced('It has been removed.')
+
         # Look for first chapter that should be downloaded in auto mode
         lower_range = 0
         if self.options.auto:
