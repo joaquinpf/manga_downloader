@@ -4,12 +4,14 @@
 
 import json
 import datetime
+import sys
 
 # #####################
 
 from notifications.factory import NotificationFactory
 from parsers.manga_downloader import MangaDownloader
 from util import fix_formatting
+from termcolor import cprint
 import os
 import time
 import copy
@@ -28,13 +30,13 @@ class MangaJsonParser:
             if not self.options.check_every_minutes or self.options.check_every_minutes < 0:
                 break
 
-            print "Will check again in %s minutes" % self.options.check_every_minutes
+            cprint("Will check again in %s minutes" % self.options.check_every_minutes, 'white', attrs=['bold'], file=sys.stdout)
             time.sleep(60 * self.options.check_every_minutes)
 
     def _download_manga(self):
-        print("Parsing JSON File...")
+        cprint("Parsing JSON File...", 'white', attrs=['bold'], file=sys.stdout)
         if self.options.verbose_FLAG:
-            print("JSON Path = %s" % self.options.json_file_path)
+            cprint("JSON Path = %s" % self.options.json_file_path, 'white', attrs=['bold'], file=sys.stdout)
 
         with open(self.options.json_file_path) as data:
             configuration = json.load(data)
