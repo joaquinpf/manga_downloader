@@ -4,7 +4,7 @@
 import os
 from functools import partial
 from pluginbase import PluginBase
-from singleton import Singleton
+from util.singleton import Singleton
 # ####################
 
 # For easier usage calculate the path relative to here.
@@ -28,7 +28,10 @@ class SiteParserFactory():
         print('Loading Plugins')
         for plugin_name in self.source.list_plugins():
             plugin = self.source.load_plugin(plugin_name)
-            plugin.setup(self)
+            setup_op = getattr(plugin, "setup", None)
+            if callable(setup_op):
+                setup_op(self)
+
         print('Finished Loading Plugins')
 
     def register_plugin(self, name, plugin):

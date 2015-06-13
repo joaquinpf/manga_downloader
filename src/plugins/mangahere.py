@@ -9,8 +9,8 @@ import time
 
 # ####################
 
-from parsers.base import SiteParserBase
-from util import get_source_code, fix_formatting, is_site_up
+from plugins.base import SiteParserBase
+from util.util import get_source_code, fix_formatting
 
 # ####################
 

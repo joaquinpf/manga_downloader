@@ -8,9 +8,9 @@ import sys
 
 # ####################
 
-from parsers.base import SiteParserBase
-from parsers.factory import SiteParserFactory
-from util import is_site_up
+from src.plugins.base import SiteParserBase
+from src.plugins.factory import SiteParserFactory
+from util.util import is_site_up
 from termcolor import cprint
 
 # ####################

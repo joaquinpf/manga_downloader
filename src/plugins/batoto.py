@@ -3,8 +3,8 @@
 import re
 from bs4 import BeautifulSoup
 
-from parsers.base import SiteParserBase
-from util import get_source_code
+from plugins.base import SiteParserBase
+from util.util import get_source_code
 
 class Batoto(SiteParserBase):
     class PointlessThing2:

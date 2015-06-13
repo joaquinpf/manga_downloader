@@ -2,8 +2,8 @@
 
 import re
 
-from parsers.base import SiteParserBase
-from util import get_source_code, fix_formatting
+from plugins.base import SiteParserBase
+from util.util import get_source_code, fix_formatting
 
 class Starkana(SiteParserBase):
     # re_get_page = re.compile("<option.*?value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")

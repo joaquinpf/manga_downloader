@@ -7,8 +7,8 @@ import string
 
 # ####################
 
-from parsers.base import SiteParserBase
-from util import get_source_code, fix_formatting
+from plugins.base import SiteParserBase
+from util.util import get_source_code, fix_formatting
 
 # ####################
 
