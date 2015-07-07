@@ -9,7 +9,7 @@ import sys
 # #####################
 
 from notifications.factory import NotificationFactory
-from src.manga_downloader import MangaDownloader
+from manga_downloader import MangaDownloader
 from util.util import fix_formatting
 from termcolor import cprint
 import os

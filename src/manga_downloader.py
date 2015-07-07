@@ -8,8 +8,8 @@ import sys
 
 # ####################
 
-from src.plugins.base import SiteParserBase
-from src.plugins.factory import SiteParserFactory
+from plugins.base import SiteParserBase
+from plugins.factory import SiteParserFactory
 from util.util import is_site_up
 from termcolor import cprint
 

@@ -25,7 +25,7 @@ import os.path
 
 from colorama import init
 
-from src.plugins.factory import SiteParserFactory
+from plugins.factory import SiteParserFactory
 
 
 
@@ -33,7 +33,7 @@ from src.plugins.factory import SiteParserFactory
 
 # #########
 
-from src.manga_downloader import MangaDownloader
+from manga_downloader import MangaDownloader
 from util.util import fix_formatting, is_image_lib_available
 from json_parser import MangaJsonParser
 from output_manager.progress_bar_manager import ProgressBarManager
