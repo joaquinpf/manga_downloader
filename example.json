@@ -1,0 +1,32 @@
+{
+    "configuration" : {
+        "notificator" : {
+            "api_key" : "YOUR API KEY",
+            "device_id" : "YOUR DEVICE ID",
+            "notificator" : "PushBullet"
+        }
+    },
+    "manga_series" : [{
+            //Exact Name of Manga Series
+            "name" : "Diamond no Ace",
+
+            //One of the following casesensitive(MangaFox, OtakuWorks, MangaReader)
+            "host_site" : "Batoto",
+
+            //Chapter Name
+            //The format is site Dependent.If the last chapter does not match any on the site
+            //the script will try to download all available chapters.If the node is not present, the
+            //script will download all of the available chapters.This field is updated by
+            //the script so that the next time the script runs only the newest chapters are
+            //retrieved.
+            "last_chapter_downloaded" : "Vol.25 Ch.214: Another Strong/Willed Guy",
+
+            //Path to save the downloaded chapters.If this node is not present, the script will
+            //create a download Directory name "./" + MANGA_NAME
+            "download_path" : "DOWNLOAD PATH"
+        }, {
+            "host_site" : "Batoto",
+            "name" : "Baby Steps"
+        }
+    ]
+}
