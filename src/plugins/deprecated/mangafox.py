@@ -68,7 +68,7 @@ class MangaFox(SiteParserBase):
                     raise self.MangaNotFound('Search Failed to find Manga.')
         else:
             # The Guess worked
-            keyword = fix_formatting(self.options.manga)
+            keyword = fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False)
             if self.options.verbose_FLAG:
                 print ("Keyword: %s" % keyword)
 
@@ -141,7 +141,7 @@ class MangaFox(SiteParserBase):
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
             page_url = '%s/%i.html' % (url, page)
-            self.download_image(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):

@@ -125,15 +125,12 @@ class SiteParserBase:
         compressed_file = os.path.join(self.options.downloadPath, compressed_file)
         return compressed_file
 
-    def download_image(self, page, page_url, manga_chapter_prefix, max_pages, current_chapter):
+    def parse_image_page(self, page, page_url, manga_chapter_prefix, max_pages, current_chapter):
         """
         Given a page URL to download from, it searches using self.imageRegex
         to parse out the image URL, and downloads and names it using
         manga_chapter_prefix and page.
         """
-
-        if self.options.verbose_FLAG:
-            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
 
         # while loop to protect against server denies for requests
         # note that disconnects are already handled by getSourceCode, we use a
@@ -160,6 +157,16 @@ class SiteParserBase:
                     max_retries -= 1
             else:
                 break
+
+        self.download_image(page, img_url, manga_chapter_prefix, max_pages, current_chapter)
+
+    def download_image(self, page, img_url, manga_chapter_prefix, max_pages, current_chapter):
+
+        if self.options.verbose_FLAG:
+            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
+
+        if not img_url.startswith('https://') and not img_url.startswith('http://'):
+            img_url = 'http://' + img_url
 
         # Loop to protect against server denies for requests and/or minor disconnects
         while True:
@@ -322,24 +329,8 @@ class SiteParserBase:
         if self.options.timeLogging_FLAG:
             print("%s (End Time): %s" % (manga_chapter_prefix, str(time.time())))
 
-        compressed_file = self.compress(manga_chapter_prefix, max_pages)
-        self.convert_chapter(compressed_file)
+        self.compress(manga_chapter_prefix, max_pages)
 
         if self.options.notificator:
             self.options.notificator.push_note("MangaDownloader: %s finished downloading" % manga_chapter_prefix,
                                                "%s finished downloading" % manga_chapter_prefix)
-
-    def convert_chapter(self, compressed_file):
-        # Check if the conversion flag is set
-        if self.options.conversion_FLAG:
-            if not is_image_lib_available():
-                print("PIL (Python Image Library) not available.")
-            else:
-                from convert.convert_file import ConvertFile
-
-                if self.options.verbose_FLAG:
-                    print ("Compressed File " + str(compressed_file))
-
-                if compressed_file is not None and self.options.outputDir is not None:
-                    ConvertFile.convert(self.options.outputMgr, compressed_file, self.options.outputDir,
-                                        self.options.device, self.options.verbose_FLAG)

@@ -91,7 +91,10 @@ def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_r
                 max_retries -= 1
         finally:
             if return_redirect_url:
-                return ret, requested_url.geturl()
+                if requested_url.is_redirect:
+                    return ret, requested_url.url
+                else:
+                    return ret, url
             else:
                 return ret
 
@@ -115,4 +118,4 @@ def zero_fill_str(input_string, num_of_zeros):
 
 def is_site_up(url):
     resp = requests.head(url)
-    return True if resp.status_code in [200, 301] else False
+    return True if resp.status_code in [200, 301, 302] else False

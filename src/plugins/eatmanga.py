@@ -67,7 +67,7 @@ class EatManga(SiteParserBase):
 
         for page in pages:
             page_url = 'http://eatmanga.com%s' % page[0]
-            self.download_image(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):

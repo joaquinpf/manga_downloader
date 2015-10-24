@@ -20,8 +20,8 @@ class Batoto(SiteParserBase):
 
         @staticmethod
         def search(source):
-            soup = BeautifulSoup(source)
-            ol = soup.find("select", id="page_select")("option")
+            soup = BeautifulSoup(source, 'html.parser')
+            ol = soup.find("select", id="page_select")["option"]
             a = Batoto.PointlessThing2()
             a.r = len(ol)
             return a
@@ -34,14 +34,14 @@ class Batoto(SiteParserBase):
 
     def get_next_url(self, c):
         s = get_source_code(c, self.options.proxy)
-        soup = BeautifulSoup(s)
+        soup = BeautifulSoup(s, 'html.parser')
         l = soup.find("img", title="Next Chapter").parent
         return l['href']
 
     def get_manga_url(self):
         url = "{}/search?name={}&name_cond=c".format(self.base_url, '+'.join(self.options.manga.split()))
         s = get_source_code(url, self.options.proxy)
-        soup = BeautifulSoup(s)
+        soup = BeautifulSoup(s, 'html.parser')
         a = soup.find("div", id="comic_search_results")
         r = a.tbody.find_all("tr")[1:]
         seriesl = []
@@ -63,7 +63,7 @@ class Batoto(SiteParserBase):
     def parse_site(self, url):
 
         s = get_source_code(url, self.options.proxy)
-        soup = BeautifulSoup(s)
+        soup = BeautifulSoup(s, 'html.parser')
         t = soup.find("table", class_="chapters_list").tbody
         cl = t.find_all("tr", class_="lang_English")
         self.chapters = [[]]
@@ -137,11 +137,11 @@ class Batoto(SiteParserBase):
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         """We ignore max_pages, because you can't regex-search that under Batoto."""
         s = get_source_code(url, self.options.proxy)
-        soup = BeautifulSoup(s)
+        soup = BeautifulSoup(s, 'html.parser')
         ol = soup.find("select", id="page_select")("option")
         n = 1
         for i in ol:
-            self.download_image(n, i['value'], manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(n, i['value'], manga_chapter_prefix, max_pages, current_chapter)
             n += 1
 
 #Register plugin

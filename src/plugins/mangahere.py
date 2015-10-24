@@ -145,7 +145,7 @@ class MangaHere(SiteParserBase):
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
             page_url = '%s/%i.html' % (url, page)
-            self.download_image(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
 
     def chapter_compare(self, x, y):
         non_decimal = re.compile(r'[^\d.]+')

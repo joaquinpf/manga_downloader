@@ -37,11 +37,13 @@ from manga_downloader import MangaDownloader
 from util.util import fix_formatting, is_image_lib_available
 from json_parser import MangaJsonParser
 from output_manager.progress_bar_manager import ProgressBarManager
+from collections import OrderedDict
 
 # #########
 
 VERSION = 'v0.8.8'
-siteDict = {}
+siteDict = OrderedDict()
+
 
 # #########
 
@@ -54,13 +56,14 @@ def print_license_info():
     print("Icon:      Copyright (c) 2006. GNU Free Document License v1.2 (Author:Kasuga).")
     print("           http://ja.wikipedia.org/wiki/%E5%88%A9%E7%94%A8%E8%80%85:Kasuga\n")
 
+
 # #########
 
 def main():
     # Initialize Colorama
     init()
 
-    #Load available plugins
+    # Load available plugins
     i = 1
     for plugin_name in SiteParserFactory.Instance().plugins:
         siteDict[str(i)] = plugin_name
@@ -77,13 +80,8 @@ def main():
     parser.set_defaults(
         all_chapters_FLAG=False,
         auto=False,
-        conversion_FLAG=False,
-        convert_Directory=False,
-        device='Kindle 3',
         downloadFormat='.cbz',
         downloadPath='DEFAULT_VALUE',
-        inputDir=None,
-        outputDir='DEFAULT_VALUE',
         overwrite_FLAG=False,
         verbose_FLAG=False,
         timeLogging_FLAG=False,
@@ -118,30 +116,6 @@ def main():
                       dest='json_file_path',
                       help='Parses the .json file and downloads all chapters newer than the last chapter downloaded for'
                            ' the listed mangas.')
-
-    parser.add_option('-c', '--convertFiles',
-                      action='store_true',
-                      dest='conversion_FLAG',
-                      help='Converts downloaded files to a Format/Size acceptable to the device specified by the '
-                           '--device parameter.')
-
-    parser.add_option('--device',
-                      dest='device',
-                      help='Specifies the conversion device. Omitting this option default to %default.')
-
-    parser.add_option('--convertDirectory',
-                      action='store_true',
-                      dest='convert_Directory',
-                      help='Converts the image files stored in the directory specified by --inputDirectory. Stores the '
-                           'converted images in the directory specified by --outputDirectory')
-
-    parser.add_option('--inputDirectory',
-                      dest='inputDir',
-                      help='The directory containing the images to convert when --convertDirectory is specified.')
-
-    parser.add_option('--outputDirectory',
-                      dest='outputDir',
-                      help='The directory to store the images when --convertDirectory is specified.')
 
     parser.add_option('-z', '--zip',
                       action='store_const',
@@ -191,7 +165,7 @@ def main():
     if options.maxChapterThreads <= 0:
         options.maxChapterThreads = 2
 
-    if len(args) == 0 and (not (options.convert_Directory or options.json_file_path is not None)):
+    if len(args) == 0 and (not (options.json_file_path is not None)):
         parser.error('Manga not specified.')
 
     set_download_path_to_name_flag = False
@@ -201,21 +175,6 @@ def main():
         # Default Directory is the ./MangaName
         if options.downloadPath == 'DEFAULT_VALUE':
             set_download_path_to_name_flag = True
-
-        # Default outputDir is the ./MangaName
-        if options.outputDir == 'DEFAULT_VALUE':
-            set_output_path_to_default_flag = True
-
-    pil_available = is_image_lib_available()
-    # Check if PIL Library is available if either of convert Flags are set
-    if (not pil_available) and (options.convert_Directory or options.conversion_FLAG):
-        print ("\nConversion Functionality Not available.\nMust install the PIL (Python Image Library)")
-        sys.exit()
-    elif pil_available:
-        from convert.convert_file import ConvertFile
-
-    if options.convert_Directory:
-        options.inputDir = os.path.abspath(options.inputDir)
 
     # Changes the working directory to the script location
     if os.path.dirname(sys.argv[0]) != "":
@@ -227,14 +186,7 @@ def main():
         options.outputMgr.start()
 
     try:
-        if options.convert_Directory:
-            if options.outputDir == 'DEFAULT_VALUE':
-                options.outputDir = '.'
-            print("Converting Files: %s" % options.inputDir)
-            ConvertFile.convert(options.outputMgr, options.inputDir, options.outputDir, options.device,
-                                options.verbose_FLAG)
-
-        elif options.json_file_path is not None:
+        if options.json_file_path is not None:
             json_parser = MangaJsonParser(options)
             json_parser.download_manga()
         else:

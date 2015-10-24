@@ -70,7 +70,7 @@ class MangaReader(SiteParserBase):
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in MangaReader.re_get_page.findall(get_source_code(url, self.options.proxy)):
             page_url = 'http://www.mangareader.net' + page[0]
-            self.download_image(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
 
 #Register plugin
 def setup(app):
