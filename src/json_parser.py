@@ -46,11 +46,6 @@ class MangaJsonParser:
         if 'configuration' in configuration:
             self.options.notificator = NotificationFactory.get_instance(configuration['configuration']['notificator'])
 
-        # Default OutputDir is the ./MangaName
-        set_output_path_to_name = False
-        if self.options.outputDir == 'DEFAULT_VALUE':
-            set_output_path_to_name = True
-
         for manga in configuration['manga_series']:
             series_options = copy.copy(self.options)
             series_options.manga = manga['name']
@@ -64,8 +59,6 @@ class MangaJsonParser:
 
             series_options.downloadPath = download_path
             series_options.lastDownloaded = last_downloaded
-            if set_output_path_to_name:
-                series_options.outputDir = download_path
 
             serie = MangaDownloader(series_options)
             result, last_chapter = serie.download_new_chapters()

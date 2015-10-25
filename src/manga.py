@@ -169,7 +169,6 @@ def main():
         parser.error('Manga not specified.')
 
     set_download_path_to_name_flag = False
-    set_output_path_to_default_flag = False
     if len(args) > 0:
 
         # Default Directory is the ./MangaName
@@ -198,9 +197,6 @@ def main():
                 if set_download_path_to_name_flag:
                     series_options.downloadPath = (
                         './' + fix_formatting(series_options.manga, series_options.spaceToken))
-
-                if set_output_path_to_default_flag:
-                    series_options.outputDir = series_options.downloadPath
 
                 series_options.downloadPath = os.path.realpath(series_options.downloadPath) + os.sep
 
