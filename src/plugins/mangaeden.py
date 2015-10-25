@@ -55,7 +55,7 @@ class MangaEden(SiteParserBase):
         lower_range = 0
         if self.options.auto:
             for row in range(0, len(self.chapters)):
-                if self.options.lastDownloaded == self.chapters[row][0][1]:
+                if self.options.lastDownloaded == self.chapters[row][1]:
                     lower_range = row + 1
 
         upper_range = len(self.chapters)
