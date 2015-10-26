@@ -22,21 +22,20 @@ import os
 import sys
 import copy
 import os.path
+import time
+
+from termcolor import cprint
 
 from colorama import init
 
 from plugins.factory import SiteParserFactory
 
 
-
-
-
 # #########
 
 from manga_downloader import MangaDownloader
-from util.util import fix_formatting, is_image_lib_available
+from util.util import fix_formatting
 from json_parser import MangaJsonParser
-from output_manager.progress_bar_manager import ProgressBarManager
 from collections import OrderedDict
 
 # #########
@@ -89,8 +88,7 @@ def main():
         useShortName=False,
         spaceToken='.',
         proxy=None,
-        check_every_minutes=-1,
-        no_progress_bars=False
+        check_every_minutes=-1
     )
 
     parser.add_option('--all',
@@ -150,11 +148,6 @@ def main():
                       help='When used with -x sets the time in minutes between checks for your bookmarked manga.',
                       type="int")
 
-    parser.add_option('--noProgressBars',
-                      action='store_true',
-                      dest='no_progress_bars',
-                      help='Disable progress bars.')
-
     (options, args) = parser.parse_args()
 
     try:
@@ -180,15 +173,31 @@ def main():
         os.chdir(os.path.dirname(sys.argv[0]))
 
     options.notificator = None
-    options.outputMgr = ProgressBarManager()
-    if not options.no_progress_bars:
-        options.outputMgr.start()
 
     try:
+
+        downloader = MangaDownloader()
+
         if options.json_file_path is not None:
-            json_parser = MangaJsonParser(options)
-            json_parser.download_manga()
+            # Load configuration from JSON file and process all manga
+            options.auto = True
+
+            json_parser = MangaJsonParser()
+            while True:
+                configuration = json_parser.parse_config(options.json_file_path)
+
+                downloader.download_chapters_from_config(configuration, options)
+
+                json_parser.save_config(options.json_file_path, configuration)
+
+                if not options.check_every_minutes or options.check_every_minutes < 0:
+                    break
+
+                cprint("Will check again in %s minutes" % options.check_every_minutes, 'white', attrs=['bold'], file=sys.stdout)
+                time.sleep(60 * options.check_every_minutes)
+
         else:
+            # Download manga specified in the command line parameters
             for manga in args:
                 series_options = copy.copy(options)
                 print(manga)
@@ -216,16 +225,10 @@ def main():
                 except KeyError:
                     raise InvalidSite('Site selection invalid.')
 
-                serie = MangaDownloader(series_options)
-                serie.download_new_chapters()
+                downloader.download_new_chapters(series_options)
 
     except KeyboardInterrupt:
         sys.exit(0)
-
-    finally:
-        # Must always stop the manager
-        if not options.no_progress_bars:
-            options.outputMgr.stop()
 
 
 if __name__ == '__main__':

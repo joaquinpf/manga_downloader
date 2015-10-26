@@ -4,8 +4,9 @@
 # ###################
 
 import re
-import string
 import time
+
+from bs4 import BeautifulSoup
 
 # ####################
 
@@ -18,7 +19,7 @@ class MangaHere(SiteParserBase):
     re_get_series = re.compile('a href="http://.*?mangahere.*?/manga/([^/]*)/[^"]*?" class=[^>]*>([^<]*)</a>')
     re_get_image = re.compile('<img src="([^"]*.jpg)[^"]*"')
     re_get_max_pages = re.compile('var total_pages = ([^;]*?);')
-    re_non_decimal = re.compile(r'[^\d|^\.]+')
+    re_non_decimal = re.compile(r'[^\d.]+')
 
     def __init__(self, options):
         SiteParserBase.__init__(self, options, 'http://www.mangahere.co')
@@ -27,7 +28,7 @@ class MangaHere(SiteParserBase):
         url = '%s/manga/%s/' % (self.base_url, fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
         return url
 
-    def parse_site(self, url):
+    def parse_chapters(self, url):
 
         source = get_source_code(url, self.options.proxy)
 
@@ -67,80 +68,37 @@ class MangaHere(SiteParserBase):
         if 'it is not available in' in source or "It's not available in" in source:
             raise self.MangaLicenced('It has been removed.')
 
-        # that's nice of them
-        # url = 'http://www.mangahere.com/cache/manga/%s/chapters.js' % keyword
-        # source = getSourceCode(url, self.proxy)
+        soup = BeautifulSoup(source, 'html.parser')
+        r_chapters = soup.find("div", class_="detail_list").find_all("ul")[0].find_all('li')
+        self.chapters = [[]]
 
-        # chapters is a 2-tuple
-        # chapters[0] contains the chapter URL
-        # chapters[1] contains the chapter title
+        for row in r_chapters:
+            info = row.find('a')
+            c_url = info['href']
+            title = info.get_text().strip()
+            chapter = c_url[:-1] if c_url.endswith('/') else c_url
+            chapter = chapter.split('/')
+            chapter = chapter[-2] + '.' + chapter[-1] if chapter[-2].startswith('v') else chapter[-1]
+            group = ''
+            tu = (c_url, title, chapter, group)
+            self.chapters.append(tu)
 
-        is_chapter_only = False
+        if self.chapters == [[]]:
+            raise self.MangaNotFound('Nothing to download.')
 
-        # can't pre-compile this because relies on class name
-        re_get_chapters = re.compile(
-            'a.*?href="http://.*?mangahere.*?/manga/%s/(v[\d]+)/(c[\d]+(\.[\d]+)?)/[^"]*?"' % keyword)
-        self.chapters = re_get_chapters.findall(source)
-        if not self.chapters:
-            is_chapter_only = True
-            re_get_chapters = re.compile(
-                'a.*?href="http://.*?mangahere.*?/manga/%s/(c[\d]+(\.[\d]+)?)/[^"]*?"' % keyword)
-            self.chapters = re_get_chapters.findall(source)
-
+        #Remove [[]] and reverse to natural order
+        self.chapters.pop(0)
+		
         # Sort chapters by volume and chapter number. Needed because next chapter isn't always accurate.
         self.chapters = sorted(self.chapters, cmp=self.chapter_compare)
 
-        lower_range = 0
-
-        if is_chapter_only:
-            for i in range(0, len(self.chapters)):
-                if self.options.auto:
-                    if self.options.lastDownloaded == self.chapters[i][0]:
-                        lower_range = i + 1
-
-                ch_number = self.re_non_decimal.sub('', self.chapters[i][0])
-                self.chapters[i] = (
-                    '%s/manga/%s/%s' % (self.base_url, keyword, self.chapters[i][0]), self.chapters[i][0],
-                    ch_number)
-
-        else:
-            for i in range(0, len(self.chapters)):
-
-                ch_number = self.re_non_decimal.sub('', self.chapters[i][1])
-                self.chapters[i] = (
-                    '%s/manga/%s/%s/%s' % (self.base_url, keyword, self.chapters[i][0], self.chapters[i][1]),
-                    self.chapters[i][0] + "." + self.chapters[i][1], ch_number)
-                if self.options.auto:
-                    if self.options.lastDownloaded == self.chapters[i][1]:
-                        lower_range = i + 1
-
-        upper_range = len(self.chapters)
-
         # Validate whether the last chapter is available
-        source = get_source_code(self.chapters[upper_range - 1][0], self.options.proxy)
+        source = get_source_code(self.chapters[-1][0], self.options.proxy)
 
         if ('not available yet' in source) or ('Sorry, the page you have requested can’t be found' in source):
             # If the last chapter is not available remove it from the list
-            del self.chapters[upper_range - 1]
-            upper_range -= 1
+            del self.chapters[-1]
 
-        # which ones do we want?
-        if not self.options.auto:
-            for i in range(0, upper_range):
-                if is_chapter_only:
-                    print('(%i) %s' % (i + 1, self.chapters[i][0]))
-                else:
-                    print('(%i) %s' % (i + 1, self.chapters[i][1]))
-
-            self.chapters_to_download = self.select_chapters(self.chapters)
-        # XML component
-        else:
-            if lower_range == upper_range:
-                raise self.NoUpdates
-
-            for i in range(lower_range, upper_range):
-                self.chapters_to_download.append(i)
-        return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in range(1, max_pages + 1):
@@ -148,18 +106,19 @@ class MangaHere(SiteParserBase):
             self.parse_image_page(page, page_url, manga_chapter_prefix, max_pages, current_chapter)
 
     def chapter_compare(self, x, y):
-        non_decimal = re.compile(r'[^\d.]+')
+        xp = x[2].split('.c')
+        yp = y[2].split('.c')
 
-        x_vol = float(non_decimal.sub('', x[0]))
-        y_vol = float(non_decimal.sub('', y[0]))
+        x_vol = float(self.re_non_decimal.sub('', xp[0])) if len(xp) == 2 else -1
+        y_vol = float(self.re_non_decimal.sub('', yp[0])) if len(yp) == 2 else -1
         if x_vol != y_vol:
             return 1 if x_vol > y_vol else -1
 
         if not x[1] or not y[1]:
             return 0
 
-        x_chapter = float(non_decimal.sub('', x[1]))
-        y_chapter = float(non_decimal.sub('', y[1]))
+        x_chapter = float(self.re_non_decimal.sub('', xp[1])) if len(xp) == 2 else float(self.re_non_decimal.sub('', xp[0]))
+        y_chapter = float(self.re_non_decimal.sub('', yp[1])) if len(xp) == 2 else float(self.re_non_decimal.sub('', yp[0]))
         if x_chapter != y_chapter:
             return 1 if x_chapter > y_chapter else -1
 

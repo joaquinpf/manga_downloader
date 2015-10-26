@@ -77,11 +77,34 @@ class SiteParserBase:
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         raise NotImplementedError('Should have implemented this')
 
-    def parse_site(self):
+    def parse_chapters(self):
         raise NotImplementedError('Should have implemented this')
 
     def get_manga_url(self):
         raise NotImplementedError('Should have implemented this')
+
+    def select_chapters_to_download(self):
+		# Look for first chapter that should be downloaded in auto mode
+        lower_range = 0
+        if self.options.auto:
+            for row in range(0, len(self.chapters)):
+                if self.options.lastDownloaded == self.chapters[row][2]:
+                    lower_range = row + 1
+
+        upper_range = len(self.chapters)
+
+        # which ones do we want?
+        if not self.options.auto:
+            for n, chapter in enumerate(self.chapters):
+                print("{:03d}. {}".format(n + 1, chapter[1].encode('utf-8')))
+            self.chapters_to_download = self.select_chapters(self.chapters)
+        # XML component
+        else:
+            if lower_range == upper_range:
+                raise self.NoUpdates
+
+            for row in range(lower_range, upper_range):
+                self.chapters_to_download.append(row)
 
     # ####
 
@@ -147,8 +170,6 @@ class SiteParserBase:
                     print("Image URL: %s" % img_url)
             except (AttributeError, TypeError):
                 if max_retries == 0:
-                    if not self.options.verbose_FLAG:
-                        self.options.outputMgr.update_output_obj(self.output_idx)
                     return
                 else:
                     # random dist. for further protection against anti-leech
@@ -181,8 +202,6 @@ class SiteParserBase:
                 pass
             else:
                 break
-        if not self.options.verbose_FLAG and self.output_idx:
-            self.options.outputMgr.update_output_obj(self.output_idx)
 
     def process_chapter(self, current_chapter):
         """
@@ -228,8 +247,6 @@ class SiteParserBase:
 
         if self.options.verbose_FLAG:
             print ("Pages: " + str(max_pages))
-        if not self.options.verbose_FLAG:
-            self.output_idx = self.options.outputMgr.create_output_obj(manga_chapter_prefix, max_pages)
 
         self.download_chapter(max_pages, url, manga_chapter_prefix, current_chapter)
 

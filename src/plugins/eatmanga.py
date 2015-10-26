@@ -20,7 +20,7 @@ class EatManga(SiteParserBase):
         url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=False, use_ignore_chars=False))
         return url
 
-    def parse_site(self, url):
+    def parse_chapters(self, url):
 
         source = get_source_code(url, self.options.proxy)
 
@@ -30,34 +30,14 @@ class EatManga(SiteParserBase):
         if not self.chapters:
             raise self.MangaNotFound
 
-        lower_range = 0
-
         for i in range(0, len(self.chapters)):
             if 'upcoming' in self.chapters[i][0]:
                 # Skip not available chapters
                 del self.chapters[i]
                 continue
 
-            chapter_number = self.chapters[i][2].replace(self.options.manga, '').strip()
+            chapter_number = 'c' + self.chapters[i][2].lower().replace(self.options.manga.lower(), '').strip()
             self.chapters[i] = ('%s%s' % (self.base_url, self.chapters[i][0]), chapter_number, chapter_number)
-            if not self.options.auto:
-                print('(%i) %s' % (i + 1, self.chapters[i][1]))
-            else:
-                if self.options.lastDownloaded == self.chapters[i][1]:
-                    lower_range = i + 1
-
-        upper_range = len(self.chapters)
-
-        if not self.options.auto:
-            self.chapters_to_download = self.select_chapters(self.chapters)
-        else:
-            if lower_range == upper_range:
-                raise self.NoUpdates
-
-            for i in range(lower_range, upper_range):
-                self.chapters_to_download.append(i)
-
-        return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         pages = EatManga.re_get_page.findall(get_source_code(url, self.options.proxy))

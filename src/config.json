@@ -1,0 +1,257 @@
+{
+    "configuration": {
+        "notificator": {
+            "api_key": "v1qKqX05RqHPxlWFGQ7s1XiKRz4JohG36sujyx5OE9Q0i", 
+            "device_id": "ujyx5OE9Q0idjAnBdJA0yG", 
+            "notificator": "PushBullet"
+        }
+    }, 
+    "manga_series": [
+        {
+            "host_site": "EatManga", 
+            "last_chapter_downloaded": "c349", 
+            "name": "Hunter X Hunter", 
+            "timestamp": "2014-08-06 12:19:57"
+        }, 
+        {
+            "host_site": "KissManga", 
+            "last_chapter_downloaded": "c191", 
+            "name": "I Am A Hero", 
+            "timestamp": "2015-07-24 06:01:31"
+        }, 
+        {
+            "host_site": "KissManga", 
+            "last_chapter_downloaded": "c100", 
+            "name": "Boys on the Run", 
+            "timestamp": "2015-09-10 20:34:21"
+        }, 
+        {
+            "host_site": "KissManga", 
+            "last_chapter_downloaded": "c042", 
+            "name": "Inu Yashiki", 
+            "timestamp": "2015-10-16 23:24:57"
+        }, 
+        {
+            "host_site": "KissManga", 
+            "last_chapter_downloaded": "c120", 
+            "name": "Vinland Saga", 
+            "timestamp": "2015-09-25 12:52:28"
+        }, 
+        {
+            "host_site": "KissManga", 
+            "last_chapter_downloaded": "c009", 
+            "name": "Te To Kuchi", 
+            "timestamp": "2014-09-25 23:51:49"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c32", 
+            "name": "Mix", 
+            "timestamp": "2015-09-13 14:28:36"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c193", 
+            "name": "Giant Killing", 
+            "timestamp": "2015-10-16 23:08:42"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c190", 
+            "name": "Last Inning", 
+            "timestamp": "2015-10-25 18:21:34"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c139", 
+            "name": "Shokugeki no Soma", 
+            "timestamp": "2015-10-17 06:57:53"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c179", 
+            "name": "Haikyuu", 
+            "timestamp": "2015-10-25 18:23:42"
+        }, 
+        {
+            "host_site": "UnixManga", 
+            "last_chapter_downloaded": "c215", 
+            "name": "Zetman", 
+            "timestamp": "2015-10-25 18:26:12"
+        }, 
+        {
+            "host_site": "MangaPanda", 
+            "last_chapter_downloaded": "c804", 
+            "name": "One Piece", 
+            "timestamp": "2015-10-22 03:21:10"
+        }, 
+        {
+            "host_site": "MangaPanda", 
+            "last_chapter_downloaded": "c648", 
+            "name": "Bleach", 
+            "timestamp": "2015-10-22 04:12:08"
+        }, 
+        {
+            "host_site": "MangaPanda", 
+            "last_chapter_downloaded": "c81", 
+            "name": "Onepunch-Man", 
+            "timestamp": "2015-10-16 23:05:09"
+        }, 
+        {
+            "host_site": "MangaPanda", 
+            "last_chapter_downloaded": "c228", 
+            "name": "Skip Beat", 
+            "timestamp": "2015-09-30 00:03:48"
+        }, 
+        {
+            "host_site": "MangaReader", 
+            "last_chapter_downloaded": "c145", 
+            "name": "Billy Bat", 
+            "timestamp": "2015-10-16 23:33:43"
+        }, 
+        {
+            "host_site": "MangaReader", 
+            "last_chapter_downloaded": "c10", 
+            "name": "Naruto Gaiden: The Seventh Hokage", 
+            "timestamp": "2015-07-02 01:54:04"
+        }, 
+        {
+            "host_site": "MangaReader", 
+            "last_chapter_downloaded": "c27", 
+            "name": "The Heroic Legend of Arslan (ARAKAWA Hiromu)", 
+            "timestamp": "2015-09-10 20:35:30"
+        }, 
+        {
+            "host_site": "MangaReader", 
+            "last_chapter_downloaded": "c340", 
+            "name": "Berserk", 
+            "timestamp": "2015-09-28 20:10:04"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c105.5", 
+            "name": "Akatsuki no Yona", 
+            "timestamp": "2015-10-08 00:05:12"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v45.c401.3", 
+            "name": "Diamond no Ace", 
+            "timestamp": "2015-08-06 06:31:51"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v26.c249", 
+            "name": "Baby Steps", 
+            "timestamp": "2015-09-30 05:48:00"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v07.c091", 
+            "name": "Historie", 
+            "timestamp": "2015-08-24 15:48:04"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c074", 
+            "name": "Shingeki no Kyojin", 
+            "timestamp": "2015-10-08 23:10:00"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v38.c457", 
+            "name": "Fairy Tail", 
+            "timestamp": "2015-10-21 20:26:13"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c201.5", 
+            "name": "The Breaker: New Waves", 
+            "timestamp": "2015-05-14 23:56:33"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c098", 
+            "name": "UQ Holder!", 
+            "timestamp": "2015-10-21 20:27:09"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v17.c124", 
+            "name": "Ookiku Furikabutte", 
+            "timestamp": "2015-10-16 23:28:42"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c035", 
+            "name": "Rin (HAROLD Sakuishi)", 
+            "timestamp": "2015-10-21 20:30:21"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v09.c077", 
+            "name": "Love Junkies", 
+            "timestamp": "2014-05-27 15:11:14"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v93.c1113", 
+            "name": "Hajime no Ippo", 
+            "timestamp": "2015-10-21 20:34:12"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v14.c138", 
+            "name": "Area no Kishi", 
+            "timestamp": "2014-08-22 23:08:31"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v20.c282", 
+            "name": "Magi", 
+            "timestamp": "2015-10-05 07:17:05"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c113", 
+            "name": "Silver Spoon", 
+            "timestamp": "2015-07-15 23:07:27"
+        },
+        {
+            "host_site": "MangaHere",
+            "last_chapter_downloaded": "c261",
+            "name": "Uchuu Kyoudai",
+            "timestamp": "2015-10-16 23:30:24"
+        },
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c029", 
+            "name": "GTO Paradise Lost", 
+            "timestamp": "2015-06-08 05:35:39"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c047", 
+            "name": "Chouka Kou", 
+            "timestamp": "2015-10-04 13:10:04"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c146", 
+            "name": "Nanatsu no Taizai", 
+            "timestamp": "2015-10-21 20:36:03"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "v41.c450", 
+            "name": "Kingdom", 
+            "timestamp": "2015-10-23 10:42:28"
+        }, 
+        {
+            "host_site": "MangaHere", 
+            "last_chapter_downloaded": "c195", 
+            "name": "Kangoku Gakuen", 
+            "timestamp": "2015-10-24 14:21:02"
+        }
+    ]
+}

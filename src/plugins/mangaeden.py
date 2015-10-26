@@ -27,7 +27,7 @@ class MangaEden(SiteParserBase):
         url = '%s/en/en-manga/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
         return url
 
-    def parse_site(self, url):
+    def parse_chapters(self, url):
 
         source = get_source_code(url, self.options.proxy)
         soup = BeautifulSoup(source, 'html.parser')
@@ -37,7 +37,7 @@ class MangaEden(SiteParserBase):
 
         for row in r_chapters:
             cells = row.find_all('td')
-            chapter = str(row['id'])[1:]
+            chapter = 'c' + str(row['id'])[1:]
             c_url = self.base_url + cells[0].a['href']
             title = cells[0].a.get_text().replace('\n', ' ').strip()
             group = cells[1].get_text().replace('\n', ' ').strip()
@@ -50,29 +50,6 @@ class MangaEden(SiteParserBase):
         #Remove [[]] and reverse to natural order
         self.chapters.pop(0)
         self.chapters.reverse()
-
-        # Look for first chapter that should be downloaded in auto mode
-        lower_range = 0
-        if self.options.auto:
-            for row in range(0, len(self.chapters)):
-                if self.options.lastDownloaded == self.chapters[row][1]:
-                    lower_range = row + 1
-
-        upper_range = len(self.chapters)
-
-        # which ones do we want?
-        if not self.options.auto:
-            for n, chapter in enumerate(self.chapters):
-                print("{:03d}. {}".format(n + 1, chapter[1].encode('utf-8')))
-            self.chapters_to_download = self.select_chapters(self.chapters)
-        # XML component
-        else:
-            if lower_range == upper_range:
-                raise self.NoUpdates
-
-            for row in range(lower_range, upper_range):
-                self.chapters_to_download.append(row)
-        return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         base_url = url[:url.rfind("/"):]

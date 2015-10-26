@@ -27,7 +27,7 @@ class KissManga(SiteParserBase):
         url = '%s/Manga/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
         return url
 
-    def parse_site(self, url):
+    def parse_chapters(self, url):
 
         source = get_source_code(url, self.options.proxy)
         soup = BeautifulSoup(source, 'html.parser')
@@ -40,10 +40,10 @@ class KissManga(SiteParserBase):
             info = row.find_all('td')[0].a
             c_url = self.base_url + info['href']
             title = info.get_text().strip()
-            chapter = title.lower().replace(self.options.manga.lower(), '').replace('Read Online', '').strip()
+            chapter = title.lower().replace(self.options.manga.lower(), '').replace('read online', '').strip()
             chapter = re.sub("(vol\.[\d.]+)", '', chapter)
             chapter = re.sub("(:.*)", '', chapter)
-            chapter = re.sub("ch\.", '', chapter).strip()
+            chapter = 'c' + re.sub("ch\.", '', chapter).strip()
             group = ''
             tu = (c_url, title, chapter, group)
             self.chapters.append(tu)
@@ -54,29 +54,6 @@ class KissManga(SiteParserBase):
         #Remove [[]] and reverse to natural order
         self.chapters.pop(0)
         self.chapters.reverse()
-
-        # Look for first chapter that should be downloaded in auto mode
-        lower_range = 0
-        if self.options.auto:
-            for row in range(0, len(self.chapters)):
-                if self.options.lastDownloaded == self.chapters[row][1]:
-                    lower_range = row + 1
-
-        upper_range = len(self.chapters)
-
-        # which ones do we want?
-        if not self.options.auto:
-            for n, chapter in enumerate(self.chapters):
-                print("{:03d}. {}".format(n + 1, chapter[1].encode('utf-8')))
-            self.chapters_to_download = self.select_chapters(self.chapters)
-        # XML component
-        else:
-            if lower_range == upper_range:
-                raise self.NoUpdates
-
-            for row in range(lower_range, upper_range):
-                self.chapters_to_download.append(row)
-        return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         s = get_source_code(url, self.options.proxy)

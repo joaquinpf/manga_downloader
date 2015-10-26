@@ -36,36 +36,17 @@ class MangaReader(SiteParserBase):
         url = (self.base_url + '%s') % keyword
         return url
 
-    def parse_site(self, url):
+
+    def parse_chapters(self, url):
 
         source = get_source_code(url, self.options.proxy)
 
         self.chapters = MangaReader.re_get_chapters.findall(source)
 
-        lower_range = 0
-
         for i in range(0, len(self.chapters)):
-            chapter_number = self.chapters[i][1].replace(self.options.manga, '').strip()
-            self.chapters[i] = (
-                '%s%s' % (self.base_url, self.chapters[i][0]), '%s%s' % (chapter_number, self.chapters[i][2]),
-                chapter_number)
-            if not self.options.auto:
-                print('(%i) %s' % (i + 1, self.chapters[i][1]))
-            else:
-                if self.options.lastDownloaded == self.chapters[i][1].decode('utf-8'):
-                    lower_range = i + 1
+            chapter_number = 'c' + self.chapters[i][1].replace(self.options.manga, '').strip()
+            self.chapters[i] = ('%s%s' % (self.base_url, self.chapters[i][0]), '%s%s' % (chapter_number, self.chapters[i][2]), chapter_number)
 
-        upper_range = len(self.chapters)
-        if not self.options.auto:
-            self.chapters_to_download = self.select_chapters(self.chapters)
-        else:
-            if lower_range == upper_range:
-                raise self.NoUpdates
-
-            for i in range(lower_range, upper_range):
-                self.chapters_to_download.append(i)
-
-        return
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         for page in MangaReader.re_get_page.findall(get_source_code(url, self.options.proxy)):
