@@ -20,15 +20,15 @@
 import optparse
 import os
 import sys
-import copy
 import os.path
 import time
 
 from termcolor import cprint
-
 from colorama import init
 
+import config
 from plugins.factory import SiteParserFactory
+
 
 
 # #########
@@ -163,7 +163,6 @@ def main():
 
     set_download_path_to_name_flag = False
     if len(args) > 0:
-
         # Default Directory is the ./MangaName
         if options.downloadPath == 'DEFAULT_VALUE':
             set_download_path_to_name_flag = True
@@ -172,42 +171,42 @@ def main():
     if os.path.dirname(sys.argv[0]) != "":
         os.chdir(os.path.dirname(sys.argv[0]))
 
+    if options.json_file_path is not None:
+        options.auto = True
+
     options.notificator = None
 
     try:
 
         downloader = MangaDownloader()
+        config.__dict__.update(options.__dict__)
+        del config.__dict__['downloadPath']
 
-        if options.json_file_path is not None:
+        if config.json_file_path is not None:
             # Load configuration from JSON file and process all manga
-            options.auto = True
-
             json_parser = MangaJsonParser()
             while True:
-                configuration = json_parser.parse_config(options.json_file_path)
+                configuration = json_parser.parse_config(config.json_file_path)
 
-                downloader.download_chapters_from_config(configuration, options)
+                downloader.download_chapters_from_config(configuration, options.downloadPath)
 
-                json_parser.save_config(options.json_file_path, configuration)
+                json_parser.save_config(config.json_file_path, configuration)
 
-                if not options.check_every_minutes or options.check_every_minutes < 0:
+                if not config.check_every_minutes or config.check_every_minutes < 0:
                     break
 
-                cprint("Will check again in %s minutes" % options.check_every_minutes, 'white', attrs=['bold'], file=sys.stdout)
-                time.sleep(60 * options.check_every_minutes)
+                cprint("Will check again in %s minutes" % config.check_every_minutes, 'white', attrs=['bold'], file=sys.stdout)
+                time.sleep(60 * config.check_every_minutes)
 
         else:
             # Download manga specified in the command line parameters
             for manga in args:
-                series_options = copy.copy(options)
                 print(manga)
-                series_options.manga = manga
 
                 if set_download_path_to_name_flag:
-                    series_options.downloadPath = (
-                        './' + fix_formatting(series_options.manga, series_options.spaceToken))
+                    download_path = ('./' + fix_formatting(manga, config.spaceToken))
 
-                series_options.downloadPath = os.path.realpath(series_options.downloadPath) + os.sep
+                download_path = os.path.realpath(download_path) + os.sep
 
                 # site selection
                 print('\nWhich site?')
@@ -221,11 +220,11 @@ def main():
                     site = input()
 
                 try:
-                    series_options.site = siteDict[site]
+                    site = siteDict[site]
                 except KeyError:
                     raise InvalidSite('Site selection invalid.')
 
-                downloader.download_new_chapters(series_options)
+                downloader.download_new_chapters(manga, site, download_path, "")
 
     except KeyboardInterrupt:
         sys.exit(0)

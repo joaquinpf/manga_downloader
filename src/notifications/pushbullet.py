@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import requests
+
 from notifications.notificator import Notificator, NotificationNotSent
 
 

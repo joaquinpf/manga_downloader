@@ -3,13 +3,14 @@
 # ####################
 
 import imghdr
+import zipfile
 import os
 import shutil
 import tempfile
-import zipfile
-import traceback
-import requests
-# import urllib
+
+import config
+
+
 
 # ####################
 
@@ -37,7 +38,7 @@ class SiteParserBase:
         def __str__(self):
             return self.error_msg
 
-    # XML file config reports nothing to do
+    # File config reports nothing to do
     class NoUpdates(Exception):
 
         def __init__(self, error_msg=''):
@@ -46,20 +47,13 @@ class SiteParserBase:
         def __str__(self):
             return self.error_msg
 
-            # ####
-
-    def __init__(self, options, base_url):
+    def __init__(self, base_url, site):
         self.base_url = base_url
-        self.options = options
-        self.chapters = []
-        self.chapters_to_download = []
         self.temp_folder = tempfile.mkdtemp()
-        self.garbage_images = {}
-        self.output_idx = None
+        self.site = site
 
         # should be defined by subclasses
         self.re_get_image = None
-        self.re_get_max_pages = None
 
     # this takes care of removing the temp directory after the last successful download
     def __del__(self):
@@ -67,12 +61,6 @@ class SiteParserBase:
             shutil.rmtree(self.temp_folder)
         except:
             pass
-        if len(self.garbage_images) > 0:
-            print('\nSome images were not downloaded due to unavailability on the site or temporary ip banning:\n')
-            for elem in self.garbage_images.keys():
-                print('Manga keyword: %s' % elem)
-                print('Pages: %s' % self.garbage_images[elem])
-                # ####
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
         raise NotImplementedError('Should have implemented this')
@@ -83,177 +71,35 @@ class SiteParserBase:
     def get_manga_url(self):
         raise NotImplementedError('Should have implemented this')
 
-    def select_chapters_to_download(self):
+    def get_max_pages(self, url):
+        raise NotImplementedError('Should have implemented this')
+
+    def select_chapters_to_download(self, chapters, last_downloaded):
 		# Look for first chapter that should be downloaded in auto mode
         lower_range = 0
-        if self.options.auto:
-            for row in range(0, len(self.chapters)):
-                if self.options.lastDownloaded == self.chapters[row][2]:
+        if config.auto:
+            for row in range(0, len(chapters)):
+                if last_downloaded == chapters[row]['chapter']:
                     lower_range = row + 1
 
-        upper_range = len(self.chapters)
+        upper_range = len(chapters)
+
+        chapters_to_download = []
 
         # which ones do we want?
-        if not self.options.auto:
-            for n, chapter in enumerate(self.chapters):
-                print("{:03d}. {}".format(n + 1, chapter[1].encode('utf-8')))
-            self.chapters_to_download = self.select_chapters(self.chapters)
+        if not config.auto:
+            for n, chapter in enumerate(chapters):
+                print("{:03d}. {}".format(n + 1, chapter['title'].encode('utf-8')))
+            chapters_to_download = self.select_chapters(chapters)
         # XML component
         else:
             if lower_range == upper_range:
                 raise self.NoUpdates
 
             for row in range(lower_range, upper_range):
-                self.chapters_to_download.append(row)
+                chapters_to_download.append(row)
 
-    # ####
-
-    def compress(self, manga_chapter_prefix, max_pages):
-        """
-        Looks inside the temporary directory and zips up all the image files.
-        """
-        if self.options.verbose_FLAG:
-            print('Compressing...')
-
-        compressed_file = os.path.join(self.temp_folder, manga_chapter_prefix) + self.options.downloadFormat
-
-        z = zipfile.ZipFile(compressed_file, 'w')
-
-        for page in range(1, max_pages + 1):
-            temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
-            # we got an image file
-            if os.path.exists(temp_path) is True and imghdr.what(temp_path) is not None:
-                z.write(temp_path, manga_chapter_prefix + '_' + str(page).zfill(3) + '.' + imghdr.what(temp_path))
-            # site has thrown a 404 because image unavailable or using anti-leeching
-            else:
-                if manga_chapter_prefix not in self.garbage_images:
-                    self.garbage_images[manga_chapter_prefix] = [page]
-                else:
-                    self.garbage_images[manga_chapter_prefix].append(page)
-
-        z.close()
-
-        if self.options.overwrite_FLAG:
-            prior_path = os.path.join(self.options.downloadPath, manga_chapter_prefix) + self.options.downloadFormat
-            if os.path.exists(prior_path):
-                os.remove(prior_path)
-
-        shutil.move(compressed_file, self.options.downloadPath)
-
-        # The object conversionQueue (singleton) stores the path to every compressed file that
-        # has been downloaded. This object is used by the conversion code to convert the downloaded images
-        # to the format specified by the Device errorMsg
-
-        compressed_file = os.path.basename(compressed_file)
-        compressed_file = os.path.join(self.options.downloadPath, compressed_file)
-        return compressed_file
-
-    def parse_image_page(self, page, page_url, manga_chapter_prefix, max_pages, current_chapter):
-        """
-        Given a page URL to download from, it searches using self.imageRegex
-        to parse out the image URL, and downloads and names it using
-        manga_chapter_prefix and page.
-        """
-
-        # while loop to protect against server denies for requests
-        # note that disconnects are already handled by getSourceCode, we use a
-        # regex to parse out the image URL and filter out garbage denies
-        max_retries = 5
-        wait_retry_time = 5
-        while True:
-            try:
-                if self.options.verbose_FLAG:
-                    print(page_url)
-                source_code = get_source_code(page_url, self.options.proxy)
-                img_url = self.__class__.re_get_image.search(source_code).group(1)
-                if self.options.verbose_FLAG:
-                    print("Image URL: %s" % img_url)
-            except (AttributeError, TypeError):
-                if max_retries == 0:
-                    return
-                else:
-                    # random dist. for further protection against anti-leech
-                    # idea from wget
-                    time.sleep(random.uniform(0.5 * wait_retry_time, 1.5 * wait_retry_time))
-                    max_retries -= 1
-            else:
-                break
-
-        self.download_image(page, img_url, manga_chapter_prefix, max_pages, current_chapter)
-
-    def download_image(self, page, img_url, manga_chapter_prefix, max_pages, current_chapter):
-
-        if self.options.verbose_FLAG:
-            print(self.chapters[current_chapter][1] + ' | ' + 'Page %s / %i' % (page, max_pages))
-
-        if not img_url.startswith('https://') and not img_url.startswith('http://'):
-            img_url = 'http://' + img_url
-
-        # Loop to protect against server denies for requests and/or minor disconnects
-        while True:
-            try:
-                temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
-
-                r = requests.get(img_url, timeout=10)
-                with open(temp_path, "wb") as code:
-                    code.write(r.content)
-                    # urllib.urlretrieve(img_url, temp_path)
-            except IOError:
-                pass
-            else:
-                break
-
-    def process_chapter(self, current_chapter):
-        """
-        Calculates prefix for filenames, creates download directory if
-        nonexistent, checks to see if chapter previously downloaded, returns
-        data critical to downloadChapter()
-        """
-
-        # Clean name with space token replacement
-        clean_name = fix_formatting(self.options.manga, self.options.spaceToken)
-
-        # Do not need to ZeroFill the manga name because this should be consistent
-        # MangaFox already prepends the manga name
-        if self.options.useShortName_FLAG:
-            manga_chapter_prefix = clean_name + self.options.spaceToken + '-' + self.options.spaceToken + zero_fill_str(
-                fix_formatting(self.chapters[current_chapter][2], self.options.spaceToken), 3)
-        else:
-            manga_chapter_prefix = clean_name + '.' + self.options.site + '.' + zero_fill_str(
-                fix_formatting(self.chapters[current_chapter][1].encode('utf-8'), self.options.spaceToken), 3)
-
-        # we already have it
-        if os.path.exists(os.path.join(self.options.downloadPath, manga_chapter_prefix) + self.options.downloadFormat) \
-                and not self.options.overwrite_FLAG:
-            print(
-                self.chapters[current_chapter][1].encode('utf-8') + ' already downloaded, skipping to next chapter...')
-            return
-
-        if self.options.timeLogging_FLAG:
-            print(manga_chapter_prefix + " (Start Time): " + str(time.time()))
-        # get the URL of the chapter homepage
-        url = self.chapters[current_chapter][0]
-
-        # mangafox .js sometimes leaves up invalid chapters
-        if url is None:
-            return
-
-        if self.options.verbose_FLAG:
-            print("PrepareDownload: " + url)
-
-        source = get_source_code(url, self.options.proxy)
-
-        max_pages = int(self.__class__.re_get_max_pages.search(source).group(1))
-
-        if self.options.verbose_FLAG:
-            print ("Pages: " + str(max_pages))
-
-        self.download_chapter(max_pages, url, manga_chapter_prefix, current_chapter)
-
-        # Post processing
-        # Release locks/semaphores
-        # Zip Them up
-        self.post_download_processing(manga_chapter_prefix, max_pages)
+        return chapters_to_download
 
     def select_chapters(self, chapters):
         """
@@ -264,10 +110,10 @@ class SiteParserBase:
         chapter_array = []
 
         input_chapter_string = 'all'
-        if not self.options.all_chapters_FLAG:
+        if not config.all_chapters_FLAG:
             input_chapter_string = raw_input('\nDownload which chapters?\n')
 
-        if self.options.all_chapters_FLAG or input_chapter_string.lower() == 'all':
+        if config.all_chapters_FLAG or input_chapter_string.lower() == 'all':
             print('\nDownloading all chapters...')
             for i in range(0, len(chapters)):
                 chapter_array.append(i)
@@ -289,7 +135,7 @@ class SiteParserBase:
                     chapter_array.append(int(i) - 1)
         return chapter_array
 
-    def select_from_results(self, results):
+    def select_from_results(self, results, manga):
         """
         Basic error checking for manga titles, queries will return a list of all mangas that
         include the query, case-insensitively.
@@ -299,7 +145,7 @@ class SiteParserBase:
 
         # Translate the manga name to lower case
         # Need to handle if it contains NonASCII characters
-        actual_name = (self.options.manga.decode('utf-8')).lower()
+        actual_name = (manga.decode('utf-8')).lower()
 
         # each element in results is a 2-tuple
         # elem[0] contains a keyword or string that needs to be passed back (generally the URL to the manga homepage)
@@ -311,23 +157,23 @@ class SiteParserBase:
 
             if actual_name in proposed_name:
                 # manual mode
-                if not self.options.auto:
+                if not config.auto:
                     print(elem[1])
 
                 # exact match
                 if proposed_name == actual_name:
-                    self.options.manga = elem[1]
+                    manga = elem[1]
                     keyword = elem[0]
                     found = True
                     break
                 else:
                     # only request input in manual mode
-                    if not self.options.auto:
+                    if not config.auto:
                         print('Did you mean: %s? (y/n)' % elem[1])
                         answer = raw_input()
 
                         if answer == 'y':
-                            self.options.manga = elem[1]
+                            manga = elem[1]
                             keyword = elem[0]
                             found = True
                             break
@@ -335,19 +181,112 @@ class SiteParserBase:
             raise self.MangaNotFound('No strict match found. Check query.')
         return keyword
 
-    def download(self):
-        """
-        for loop that goes through the chapters we selected.
-        """
-        for current_chapter in self.chapters_to_download:
-            self.process_chapter(current_chapter)
+    # ####
 
-    def post_download_processing(self, manga_chapter_prefix, max_pages):
-        if self.options.timeLogging_FLAG:
+    def parse_image_page(self, page, page_url, manga_chapter_prefix, max_pages, current_chapter):
+        """
+        Given a page URL to download from, it searches using self.imageRegex
+        to parse out the image URL, and downloads and names it using
+        manga_chapter_prefix and page.
+        """
+
+        # while loop to protect against server denies for requests
+        # note that disconnects are already handled by getSourceCode, we use a
+        # regex to parse out the image URL and filter out garbage denies
+        max_retries = 5
+        wait_retry_time = 5
+        while True:
+            try:
+                if config.verbose_FLAG:
+                    print(page_url)
+                source_code = get_source_code(page_url, config.proxy)
+                img_url = self.__class__.re_get_image.search(source_code).group(1)
+                if config.verbose_FLAG:
+                    print("Image URL: %s" % img_url)
+            except (AttributeError, TypeError):
+                if max_retries == 0:
+                    return
+                else:
+                    # random dist. for further protection against anti-leech
+                    # idea from wget
+                    time.sleep(random.uniform(0.5 * wait_retry_time, 1.5 * wait_retry_time))
+                    max_retries -= 1
+            else:
+                break
+
+        self.download_image(page, img_url, manga_chapter_prefix, max_pages, current_chapter)
+
+    def download_image(self, page, img_url, manga_chapter_prefix, max_pages, current_chapter):
+
+        if config.verbose_FLAG:
+            print(current_chapter['title'] + ' | ' + 'Page %s / %i' % (page, max_pages))
+
+        if not img_url.startswith('https://') and not img_url.startswith('http://'):
+            img_url = 'http://' + img_url
+
+        # Loop to protect against server denies for requests and/or minor disconnects
+        while True:
+            try:
+                temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
+
+                r = requests.get(img_url, timeout=10)
+                with open(temp_path, "wb") as code:
+                    code.write(r.content)
+                    # urllib.urlretrieve(img_url, temp_path)
+            except IOError:
+                pass
+            else:
+                break
+
+    def process_chapter(self, current_chapter, manga, download_path):
+        """
+        Calculates prefix for filenames, creates download directory if
+        nonexistent, checks to see if chapter previously downloaded, returns
+        data critical to downloadChapter()
+        """
+
+        # Clean name with space token replacement
+        clean_name = fix_formatting(manga, config.spaceToken)
+
+        # Do not need to ZeroFill the manga name because this should be consistent
+        if config.useShortName_FLAG:
+            manga_chapter_prefix = clean_name + config.spaceToken + '-' + config.spaceToken + zero_fill_str(
+                fix_formatting(current_chapter['chapter'], config.spaceToken), 3)
+        else:
+            manga_chapter_prefix = clean_name + '.' + self.site + '.' + zero_fill_str(
+                fix_formatting(current_chapter['title'].encode('utf-8'), config.spaceToken), 3)
+
+        # we already have it
+        if os.path.exists(os.path.join(download_path, manga_chapter_prefix) + config.downloadFormat) \
+                and not config.overwrite_FLAG:
+            print(
+                current_chapter['title'].encode('utf-8') + ' already downloaded, skipping to next chapter...')
+            return
+
+        if config.timeLogging_FLAG:
+            print(manga_chapter_prefix + " (Start Time): " + str(time.time()))
+
+        # get the URL of the chapter homepage
+        url = current_chapter['url']
+
+        if config.verbose_FLAG:
+            print("PrepareDownload: " + url)
+
+        max_pages = self.get_max_pages(url)
+
+        if config.verbose_FLAG:
+            print ("Pages: " + str(max_pages))
+
+        self.download_chapter(max_pages, url, manga_chapter_prefix, current_chapter)
+        self.post_download_processing(manga_chapter_prefix, max_pages, download_path)
+
+    # Post process download by compressing and sending necesary notifications
+    def post_download_processing(self, manga_chapter_prefix, max_pages, download_path):
+        if config.timeLogging_FLAG:
             print("%s (End Time): %s" % (manga_chapter_prefix, str(time.time())))
 
-        self.compress(manga_chapter_prefix, max_pages)
+        compress(self.temp_folder, manga_chapter_prefix, download_path, config.downloadFormat, config.overwrite_FLAG)
 
-        if self.options.notificator:
-            self.options.notificator.push_note("MangaDownloader: %s finished downloading" % manga_chapter_prefix,
+        if config.notificator:
+            config.notificator.push_note("MangaDownloader: %s finished downloading" % manga_chapter_prefix,
                                                "%s finished downloading" % manga_chapter_prefix)

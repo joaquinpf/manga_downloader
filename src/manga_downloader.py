@@ -12,32 +12,29 @@ from plugins.base import SiteParserBase
 from plugins.factory import SiteParserFactory
 from util.util import is_site_up
 from termcolor import cprint
-import copy
 import datetime
 from util.util import fix_formatting
+import config
 
 
 # ####################
 
 
 class MangaDownloader:
-    def download_chapters_from_config(self, configuration, base_options):
+
+    # Download chapters based on configuration most likely coming from JSON
+    def download_chapters_from_config(self, configuration, base_download_path):
 
         for manga in configuration['manga_series']:
-            series_options = copy.copy(base_options)
-            series_options.manga = manga['name']
-            series_options.site = manga['host_site']
+            name = manga['name']
+            site = manga['host_site']
             last_downloaded = manga.get('last_chapter_downloaded', "")
-            download_path = manga.get('download_path',
-                                      ('./' + fix_formatting(series_options.manga, series_options.spaceToken)))
+            download_path = manga.get('download_path', ('./' + fix_formatting(name, config.spaceToken)))
 
-            if base_options.downloadPath != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
-                download_path = os.path.join(base_options.downloadPath, download_path)
+            if base_download_path != 'DEFAULT_VALUE' and not os.path.isabs(download_path):
+                download_path = os.path.join(base_download_path, download_path)
 
-            series_options.downloadPath = download_path
-            series_options.lastDownloaded = last_downloaded
-
-            result, last_chapter = self.download_new_chapters(series_options)
+            result, last_chapter = self.download_new_chapters(name, site, download_path, last_downloaded)
 
             if result:
                 t = datetime.datetime.today()
@@ -45,41 +42,42 @@ class MangaDownloader:
                 manga['timestamp'] = timestamp
                 manga['last_chapter_downloaded'] = last_chapter
 
-    def download_new_chapters(self, options):
+    # Download specified chapters
+    def download_new_chapters(self, manga, site, download_path, last_downloaded):
+
         try:
-            site_parser = SiteParserFactory.Instance().get_instance(options)
+            site_parser = SiteParserFactory.Instance().get_instance(site)
 
             if not is_site_up(site_parser.base_url):
-                cprint("Warn: %s seems to be down, won't try to download for now" % site_parser.options.site, 'yellow',
+                cprint("Warn: %s seems to be down, won't try to download for now" % site, 'yellow',
                        attrs=['bold'], file=sys.stderr)
                 return False, None
 
-            print("Beginning '%s' check for '%s'" % (options.site, options.manga))
+            print("Beginning '%s' check for '%s'" % (site, manga))
 
-            url = site_parser.get_manga_url()
-            if options.verbose_FLAG:
+            url = site_parser.get_manga_url(manga)
+            if config.verbose_FLAG:
                 print("Will check: %s" % url)
 
             if not is_site_up(url):
                 cprint(
-                    "Warn: Manga url seems to be down in '%s', was it removed? Won't try to download for now" % site_parser.options.site,
+                    "Warn: Manga url seems to be down in '%s', was it removed? Won't try to download for now" % site,
                     'yellow', attrs=['bold'], file=sys.stderr)
                 return False, None
 
-            site_parser.parse_chapters(url)
-            site_parser.select_chapters_to_download()
-            last_chap = None
-            for current_chapter in site_parser.chapters:
-                last_chap = current_chapter[1]
+            chapters = site_parser.parse_chapters(url, manga)
+            chapters_to_download = site_parser.select_chapters_to_download(chapters, last_downloaded)
+            last_chap = chapters[-1]['chapter']
 
             if not last_chap:
                 raise Exception("Error: Couldn't fetch the last chapter number")
 
             # create download directory if not found
-            if not os.path.exists(options.downloadPath):
-                os.makedirs(options.downloadPath)
+            if not os.path.exists(download_path):
+                os.makedirs(download_path)
 
-            site_parser.download()
+            for current_chapter in chapters_to_download:
+                site_parser.process_chapter(chapters[current_chapter], manga, download_path)
 
             return True, last_chap
 
@@ -89,20 +87,20 @@ class MangaDownloader:
                 there.""", 'red', attrs=['bold'], file=sys.stderr)
             raise
         except site_parser.NoUpdates:
-            cprint("Manga '%s' up-to-date." % options.manga, 'green', attrs=['bold'], file=sys.stdout)
+            cprint("Manga '%s' up-to-date." % manga, 'green', attrs=['bold'], file=sys.stdout)
             return False, 0
         except SiteParserBase.MangaNotFound:
-            cprint("Warn: Manga '%s' not found, temporary?" % options.manga, 'yellow', attrs=['bold'], file=sys.stderr)
+            cprint("Warn: Manga '%s' not found, temporary?" % manga, 'yellow', attrs=['bold'], file=sys.stderr)
             return False, 0
         except SiteParserBase.MangaLicenced:
-            cprint("Warn: Manga '%s' was licenced and removed from the site" % options.manga, 'yellow', attrs=['bold'],
+            cprint("Warn: Manga '%s' was licenced and removed from the site" % manga, 'yellow', attrs=['bold'],
                    file=sys.stderr)
             return False, 0
         except KeyboardInterrupt:
             raise
         except Exception:
-            cprint("Error: Unknown error trying to download manga '%s'" % options.manga, 'red', attrs=['bold'],
+            cprint("Error: Unknown error trying to download manga '%s'" % manga, 'red', attrs=['bold'],
                    file=sys.stderr)
-            if options.verbose_FLAG:
+            if config.verbose_FLAG:
                 cprint(traceback.format_exc(), 'red', attrs=['bold'], file=sys.stderr)
             return False, 0

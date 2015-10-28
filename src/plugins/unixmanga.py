@@ -4,9 +4,9 @@
 # ###################
 
 import re
-import string
-import time
-import urllib
+
+import config
+
 
 # ####################
 
@@ -19,20 +19,20 @@ from util.util import get_source_code, fix_formatting
 class UnixManga(SiteParserBase):
     re_get_max_pages = re.compile(ur'<A class="td2" rel="nofollow" .*>([\d.]+)\.jpg</A><BR>', re.DOTALL)
 
-    def __init__(self, options):
-        SiteParserBase.__init__(self, options, 'http://unixmanga.nl')
+    def __init__(self):
+        SiteParserBase.__init__(self, 'http://unixmanga.nl', 'UnixManga')
 
-    def get_manga_url(self):
-        url = '%s/onlinereading/%s.html' % (self.base_url, fix_formatting(self.options.manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+    def get_manga_url(self, manga):
+        url = '%s/onlinereading/%s.html' % (self.base_url, fix_formatting(manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
         return url
 
 
-    def parse_chapters(self, url):
+    def parse_chapters(self, url, manga):
 
-        source = get_source_code(url, self.options.proxy)
+        source = get_source_code(url, config.proxy)
         soup = BeautifulSoup(source, 'html.parser')
         r_chapters = soup.find_all("tr", class_="snF")
-        self.chapters = [[]]
+        chapters = [[]]
         r_chapters.pop(0)
 
         for row in r_chapters:
@@ -46,19 +46,24 @@ class UnixManga(SiteParserBase):
                 chapter = 'c' + str(int(chapter)) if chapter.is_integer() else str(chapter)
             except AttributeError:
                 chapter = 'c0'
-            tu = (c_url, title, chapter, group)
-            self.chapters.append(tu)
+            tu = {'url': c_url, 'title': title, 'chapter': chapter, 'group': group}
+            chapters.append(tu)
 
-        if self.chapters == [[]]:
+        if chapters == [[]]:
             raise self.MangaNotFound('Nothing to download.')
 
         #Remove [[]] and reverse to natural order
-        self.chapters.pop(0)
-        self.chapters.reverse()
+        chapters.pop(0)
+        chapters.reverse()
 
+        return chapters
+
+    def get_max_pages(self, url):
+        source = get_source_code(url, config.proxy)
+        return int(self.__class__.re_get_max_pages.search(source).group(1))
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
-        s = get_source_code(url, self.options.proxy)
+        s = get_source_code(url, config.proxy)
         soup = BeautifulSoup(s, 'html.parser')
         pages = soup.find_all('a', class_="td2")
         n = 1

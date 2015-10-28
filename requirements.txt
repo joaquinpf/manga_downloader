@@ -5,3 +5,5 @@ requests==2.3.0
 pluginbase==0.3
 colorama==0.3.3
 termcolor==1.1.0
+six==1.7.3
+flask-blitzdb

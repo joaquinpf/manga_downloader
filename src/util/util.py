@@ -2,12 +2,16 @@
 
 # ###################
 
-import gzip
-import io
 import random
 import re
+import os
 import string
 import time
+import imghdr
+import zipfile
+import shutil
+import glob
+
 import requests
 
 try:
@@ -119,3 +123,33 @@ def zero_fill_str(input_string, num_of_zeros):
 def is_site_up(url):
     resp = requests.head(url)
     return True if resp.status_code in [200, 301, 302] else False
+
+
+def compress(temp_folder, manga_chapter_prefix, download_path, format, overwrite):
+    """
+    Looks inside the temporary directory and zips up all the image files.
+    """
+    compressed_file = os.path.join(temp_folder, manga_chapter_prefix) + format
+
+    z = zipfile.ZipFile(compressed_file, 'w')
+    pages = [f for f in os.listdir(temp_folder) if re.match(manga_chapter_prefix + '_.*', f)]
+    for page in pages:
+        page_path = os.path.join(temp_folder, page)
+        z.write(page_path, page + '.' + imghdr.what(page_path))
+
+    z.close()
+
+    if overwrite:
+        prior_path = os.path.join(download_path, manga_chapter_prefix) + format
+        if os.path.exists(prior_path):
+            os.remove(prior_path)
+
+    shutil.move(compressed_file, download_path)
+
+    # The object conversionQueue (singleton) stores the path to every compressed file that
+    # has been downloaded. This object is used by the conversion code to convert the downloaded images
+    # to the format specified by the Device errorMsg
+
+    compressed_file = os.path.basename(compressed_file)
+    compressed_file = os.path.join(download_path, compressed_file)
+    return compressed_file

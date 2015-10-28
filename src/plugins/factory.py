@@ -3,8 +3,12 @@
 # ####################
 import os
 from functools import partial
+
 from pluginbase import PluginBase
+
 from util.singleton import Singleton
+
+
 # ####################
 
 # For easier usage calculate the path relative to here.
@@ -39,10 +43,10 @@ class SiteParserFactory():
         self.plugins[name] = plugin
         print("Loaded Plugin '%s'" % name)
 
-    def get_instance(self, options):
-        parser_class = self.plugins.get(options.site, None)
+    def get_instance(self, site):
+        parser_class = self.plugins.get(site, None)
 
         if not parser_class:
             raise NotImplementedError("Site Not Supported")
 
-        return parser_class(options)
+        return parser_class()

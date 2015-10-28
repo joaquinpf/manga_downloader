@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 import re
+from collections import OrderedDict
 
+import config
 from plugins.base import SiteParserBase
 from util.util import get_source_code, fix_formatting
 
-from collections import OrderedDict
 
 class EatManga(SiteParserBase):
     re_get_chapters = re.compile('<a href="([^"]*)" title="([^"]*)">([^<]*)</a>([^<]*)</th>')
@@ -13,34 +14,41 @@ class EatManga(SiteParserBase):
     re_get_page = re.compile("<option value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
     re_get_image = re.compile('img id="eatmanga_image.*" src="([^"]*)')
 
-    def __init__(self, options):
-        SiteParserBase.__init__(self, options, 'http://eatmanga.com')
+    def __init__(self):
+        SiteParserBase.__init__(self, 'http://eatmanga.com', 'EatManga')
 
-    def get_manga_url(self):
-        url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(self.options.manga, '-', remove_special_chars=True, lower_case=False, use_ignore_chars=False))
+    def get_manga_url(self, manga):
+        url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(manga, '-', remove_special_chars=True, lower_case=False, use_ignore_chars=False))
         return url
 
-    def parse_chapters(self, url):
+    def parse_chapters(self, url, manga):
 
-        source = get_source_code(url, self.options.proxy)
+        source = get_source_code(url, config.proxy)
 
-        self.chapters = EatManga.re_get_chapters.findall(source)
-        self.chapters.reverse()
+        chapters = EatManga.re_get_chapters.findall(source)
+        chapters.reverse()
 
-        if not self.chapters:
+        if not chapters:
             raise self.MangaNotFound
 
-        for i in range(0, len(self.chapters)):
-            if 'upcoming' in self.chapters[i][0]:
+        for i in range(0, len(chapters)):
+            if 'upcoming' in chapters[i][0]:
                 # Skip not available chapters
-                del self.chapters[i]
+                del chapters[i]
                 continue
 
-            chapter_number = 'c' + self.chapters[i][2].lower().replace(self.options.manga.lower(), '').strip()
-            self.chapters[i] = ('%s%s' % (self.base_url, self.chapters[i][0]), chapter_number, chapter_number)
+            chapter_number = 'c' + chapters[i][2].lower().replace(manga.lower(), '').strip()
+            tu = {'url': '%s%s' % (self.base_url, chapters[i][0]), 'title': chapter_number, 'chapter': chapter_number, 'group': None}
+            chapters[i] = tu
+
+        return chapters
+
+    def get_max_pages(self, url):
+        source = get_source_code(url, config.proxy)
+        return int(self.__class__.re_get_max_pages.search(source).group(1))
 
     def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
-        pages = EatManga.re_get_page.findall(get_source_code(url, self.options.proxy))
+        pages = EatManga.re_get_page.findall(get_source_code(url, config.proxy))
 
         # Remove duplicate pages if any and ensure order
         pages = list(OrderedDict.fromkeys(pages))
