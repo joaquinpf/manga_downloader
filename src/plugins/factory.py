@@ -40,7 +40,7 @@ class SiteParserFactory():
 
     def register_plugin(self, name, plugin):
         """A function a plugin can use to register a formatter."""
-        self.plugins[name] = plugin
+        self.plugins[name] = plugin()
         print("Loaded Plugin '%s'" % name)
 
     def get_instance(self, site):
@@ -49,4 +49,4 @@ class SiteParserFactory():
         if not parser_class:
             raise NotImplementedError("Site Not Supported")
 
-        return parser_class()
+        return parser_class

@@ -2,10 +2,6 @@
 
 # ####################
 
-import imghdr
-import zipfile
-import os
-import shutil
 import tempfile
 
 import config
@@ -62,7 +58,7 @@ class SiteParserBase:
         except:
             pass
 
-    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, url, manga_chapter_prefix, current_chapter):
         raise NotImplementedError('Should have implemented this')
 
     def parse_chapters(self):
@@ -272,16 +268,11 @@ class SiteParserBase:
         if config.verbose_FLAG:
             print("PrepareDownload: " + url)
 
-        max_pages = self.get_max_pages(url)
-
-        if config.verbose_FLAG:
-            print ("Pages: " + str(max_pages))
-
-        self.download_chapter(max_pages, url, manga_chapter_prefix, current_chapter)
-        self.post_download_processing(manga_chapter_prefix, max_pages, download_path)
+        self.download_chapter(url, manga_chapter_prefix, current_chapter)
+        self.post_download_processing(manga_chapter_prefix, download_path)
 
     # Post process download by compressing and sending necesary notifications
-    def post_download_processing(self, manga_chapter_prefix, max_pages, download_path):
+    def post_download_processing(self, manga_chapter_prefix, download_path):
         if config.timeLogging_FLAG:
             print("%s (End Time): %s" % (manga_chapter_prefix, str(time.time())))
 

@@ -47,7 +47,7 @@ class EatManga(SiteParserBase):
         source = get_source_code(url, config.proxy)
         return int(self.__class__.re_get_max_pages.search(source).group(1))
 
-    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, url, manga_chapter_prefix, current_chapter):
         pages = EatManga.re_get_page.findall(get_source_code(url, config.proxy))
 
         # Remove duplicate pages if any and ensure order
@@ -55,7 +55,7 @@ class EatManga(SiteParserBase):
 
         for page in pages:
             page_url = 'http://eatmanga.com%s' % page[0]
-            self.parse_image_page(page[1], page_url, manga_chapter_prefix, max_pages, current_chapter)
+            self.parse_image_page(page[1], page_url, manga_chapter_prefix, len(pages), current_chapter)
 
 #Register plugin
 def setup(app):

@@ -29,7 +29,7 @@ class MangaHere(SiteParserBase):
         SiteParserBase.__init__(self, 'http://www.mangahere.co', 'MangaHere')
 
     def get_manga_url(self, manga):
-        url = '%s/manga/%s' % (self.base_url, fix_formatting(manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        url = '%s/manga/%s/' % (self.base_url, fix_formatting(manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
         return url
 
     def parse_chapters(self, url, manga):
@@ -109,7 +109,8 @@ class MangaHere(SiteParserBase):
         source = get_source_code(url, config.proxy)
         return int(self.__class__.re_get_max_pages.search(source).group(1))
 
-    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, url, manga_chapter_prefix, current_chapter):
+        max_pages = self.get_max_pages(url)
         for page in range(1, max_pages + 1):
             page_url = '%s/%i.html' % (url, page)
             self.parse_image_page(page, page_url, manga_chapter_prefix, max_pages, current_chapter)

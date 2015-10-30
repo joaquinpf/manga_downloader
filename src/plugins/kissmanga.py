@@ -61,12 +61,12 @@ class KissManga(SiteParserBase):
         source = get_source_code(url, config.proxy)
         return int(self.__class__.re_get_max_pages.search(source).group(1))
 
-    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, url, manga_chapter_prefix, current_chapter):
         s = get_source_code(url, config.proxy)
         pages = re.findall(self.re_get_image_urls, s)
         n = 1
         for page in pages:
-            self.download_image(n, page, manga_chapter_prefix, max_pages, current_chapter)
+            self.download_image(n, page, manga_chapter_prefix, len(pages), current_chapter)
             n += 1
 
 #Register plugin

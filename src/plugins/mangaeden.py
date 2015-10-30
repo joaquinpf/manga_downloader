@@ -57,7 +57,8 @@ class MangaEden(SiteParserBase):
         source = get_source_code(url, config.proxy)
         return int(self.__class__.re_get_max_pages.search(source).group(1))
 
-    def download_chapter(self, max_pages, url, manga_chapter_prefix, current_chapter):
+    def download_chapter(self, url, manga_chapter_prefix, current_chapter):
+        max_pages = self.get_max_pages(url)
         base_url = url[:url.rfind("/"):]
         base_url = base_url[:base_url.rfind("/"):]
         for page in range(1, max_pages + 1):
