@@ -8,12 +8,6 @@
     }, 
     "manga_series": [
         {
-            "host_site": "MangaPanda", 
-            "last_chapter_downloaded": "c805", 
-            "name": "One Piece", 
-            "timestamp": "2015-10-29 21:15:48"
-        }, 
-        {
             "host_site": "EatManga", 
             "last_chapter_downloaded": "c349", 
             "name": "Hunter X Hunter", 
@@ -33,15 +27,15 @@
         }, 
         {
             "host_site": "KissManga", 
-            "last_chapter_downloaded": "c043", 
+            "last_chapter_downloaded": "c042", 
             "name": "Inu Yashiki", 
-            "timestamp": "2015-10-29 21:17:40"
+            "timestamp": "2015-10-16 23:24:57"
         }, 
         {
             "host_site": "KissManga", 
-            "last_chapter_downloaded": "c121", 
+            "last_chapter_downloaded": "c120", 
             "name": "Vinland Saga", 
-            "timestamp": "2015-10-28 16:48:23"
+            "timestamp": "2015-09-25 12:52:28"
         }, 
         {
             "host_site": "KissManga", 
@@ -87,9 +81,15 @@
         }, 
         {
             "host_site": "MangaPanda", 
-            "last_chapter_downloaded": "c649", 
+            "last_chapter_downloaded": "c804", 
+            "name": "One Piece", 
+            "timestamp": "2015-10-22 03:21:10"
+        }, 
+        {
+            "host_site": "MangaPanda", 
+            "last_chapter_downloaded": "c648", 
             "name": "Bleach", 
-            "timestamp": "2015-10-29 21:18:33"
+            "timestamp": "2015-10-22 04:12:08"
         }, 
         {
             "host_site": "MangaPanda", 
@@ -105,9 +105,9 @@
         }, 
         {
             "host_site": "MangaReader", 
-            "last_chapter_downloaded": "c146", 
+            "last_chapter_downloaded": "c145", 
             "name": "Billy Bat", 
-            "timestamp": "2015-10-28 16:49:05"
+            "timestamp": "2015-10-16 23:33:43"
         }, 
         {
             "host_site": "MangaReader", 
@@ -147,9 +147,9 @@
         }, 
         {
             "host_site": "MangaHere", 
-            "last_chapter_downloaded": "v07.c092", 
+            "last_chapter_downloaded": "v07.c091", 
             "name": "Historie", 
-            "timestamp": "2015-10-29 21:19:46"
+            "timestamp": "2015-08-24 15:48:04"
         }, 
         {
             "host_site": "MangaHere", 
@@ -159,15 +159,21 @@
         }, 
         {
             "host_site": "MangaHere", 
+            "last_chapter_downloaded": "Fairy Tail 458", 
+            "name": "Fairy Tail", 
+            "timestamp": "2015-10-26 00:12:11"
+        }, 
+        {
+            "host_site": "MangaHere", 
             "last_chapter_downloaded": "c201.5", 
             "name": "The Breaker: New Waves", 
             "timestamp": "2015-05-14 23:56:33"
         }, 
         {
             "host_site": "MangaHere", 
-            "last_chapter_downloaded": "c099", 
+            "last_chapter_downloaded": "c098", 
             "name": "UQ Holder!", 
-            "timestamp": "2015-10-29 21:21:32"
+            "timestamp": "2015-10-21 20:27:09"
         }, 
         {
             "host_site": "MangaHere", 
@@ -213,9 +219,9 @@
         }, 
         {
             "host_site": "MangaHere", 
-            "last_chapter_downloaded": "c262", 
+            "last_chapter_downloaded": "c261", 
             "name": "Uchuu Kyoudai", 
-            "timestamp": "2015-10-29 21:26:13"
+            "timestamp": "2015-10-16 23:30:24"
         }, 
         {
             "host_site": "MangaHere", 
@@ -231,9 +237,9 @@
         }, 
         {
             "host_site": "MangaHere", 
-            "last_chapter_downloaded": "c147", 
+            "last_chapter_downloaded": "c146", 
             "name": "Nanatsu no Taizai", 
-            "timestamp": "2015-10-29 21:29:10"
+            "timestamp": "2015-10-21 20:36:03"
         }, 
         {
             "host_site": "MangaHere", 
