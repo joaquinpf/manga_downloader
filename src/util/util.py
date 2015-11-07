@@ -135,6 +135,8 @@ def compress(temp_folder, manga_chapter_prefix, download_path, format, overwrite
     pages = [f for f in os.listdir(temp_folder) if re.match(manga_chapter_prefix + '_.*', f)]
     for page in pages:
         page_path = os.path.join(temp_folder, page)
+        if not os.path.exists(page_path):
+            continue
         z.write(page_path, page + '.' + imghdr.what(page_path))
 
     z.close()
