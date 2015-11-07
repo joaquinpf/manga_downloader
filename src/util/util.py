@@ -137,7 +137,10 @@ def compress(temp_folder, manga_chapter_prefix, download_path, format, overwrite
         page_path = os.path.join(temp_folder, page)
         if not os.path.exists(page_path):
             continue
-        z.write(page_path, page + '.' + imghdr.what(page_path))
+        img_type = imghdr.what(page_path)
+        if not img_type:
+            continue
+        z.write(page_path, page + '.' + img_type)
 
     z.close()
 
