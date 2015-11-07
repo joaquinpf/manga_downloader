@@ -197,6 +197,8 @@ class SiteParserBase:
                     print(page_url)
                 source_code = get_source_code(page_url, config.proxy)
                 img_url = self.__class__.re_get_image.search(source_code).group(1)
+                if 'ucredits' in img_url:
+                    return
                 if config.verbose_FLAG:
                     print("Image URL: %s" % img_url)
             except (AttributeError, TypeError):
