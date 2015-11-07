@@ -200,6 +200,7 @@ def main():
 
         else:
             # Download manga specified in the command line parameters
+            download_path = options.downloadPath
             for manga in args:
                 print(manga)
 
