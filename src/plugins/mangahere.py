@@ -82,7 +82,7 @@ class MangaHere(SiteParserBase):
             title = info.get_text().strip()
             chapter = c_url[:-1] if c_url.endswith('/') else c_url
             chapter = chapter.split('/')
-            chapter = chapter[-2] + '.' + chapter[-1] if chapter[-2].startswith('v') else chapter[-1]
+            chapter = chapter[-1] #chapter[-2] + '.' + chapter[-1] if chapter[-2].startswith('v') else chapter[-1]
             group = ''
             tu = {'url': c_url, 'title': title, 'chapter': chapter, 'group': group}
             chapters.append(tu)
