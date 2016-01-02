@@ -72,7 +72,7 @@ class MangaHere(SiteParserBase):
         if 'it is not available in' in source or "It's not available in" in source:
             raise self.MangaLicenced('It has been removed.')
 
-        soup = BeautifulSoup(source, 'html.parser')
+        soup = BeautifulSoup(source, 'html5lib')
         r_chapters = soup.find("div", class_="detail_list").find_all("ul")[0].find_all('li')
         chapters = [[]]
 
