@@ -2,6 +2,7 @@
 
 # ####################
 import os
+import html5lib
 from functools import partial
 
 from pluginbase import PluginBase
