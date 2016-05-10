@@ -197,7 +197,7 @@ class SiteParserBase:
         # while loop to protect against server denies for requests
         # note that disconnects are already handled by getSourceCode, we use a
         # regex to parse out the image URL and filter out garbage denies
-        max_retries = 5
+        max_retries = 15
         wait_retry_time = 5
         while True:
             try:
@@ -232,11 +232,23 @@ class SiteParserBase:
             img_url = 'http://' + img_url
 
         # Loop to protect against server denies for requests and/or minor disconnects
+        max_retries = 15
+        wait_retry_time = 5
         while True:
             try:
                 temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
 
                 r = requests.get(img_url, timeout=180)
+
+                if r.status_code != 200:
+                    if max_retries == 0:
+                        temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
+                        raise self.ErrorDownloading(temp_path)
+
+                    time.sleep(random.uniform(0.5 * wait_retry_time, 1.5 * wait_retry_time))
+                    max_retries -= 1
+                    continue
+
                 with open(temp_path, "wb") as code:
                     code.write(r.content)
                     # urllib.urlretrieve(img_url, temp_path)
