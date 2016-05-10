@@ -3,7 +3,7 @@
 # ####################
 
 import tempfile
-
+import os
 import config
 
 
@@ -22,6 +22,14 @@ class SiteParserBase:
 
         def __init__(self, error_msg=''):
             self.error_msg = 'Manga not found. %s' % error_msg
+
+        def __str__(self):
+            return self.error_msg
+
+    class ErrorDownloading(Exception):
+
+        def __init__(self, error_msg=''):
+            self.error_msg = 'Error downloading. %s' % error_msg
 
         def __str__(self):
             return self.error_msg
@@ -203,7 +211,8 @@ class SiteParserBase:
                     print("Image URL: %s" % img_url)
             except (AttributeError, TypeError):
                 if max_retries == 0:
-                    return
+                    temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
+                    raise self.ErrorDownloading(temp_path)
                 else:
                     # random dist. for further protection against anti-leech
                     # idea from wget
@@ -227,10 +236,12 @@ class SiteParserBase:
             try:
                 temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
 
-                r = requests.get(img_url, timeout=10)
+                r = requests.get(img_url, timeout=180)
                 with open(temp_path, "wb") as code:
                     code.write(r.content)
                     # urllib.urlretrieve(img_url, temp_path)
+                if os.path.getsize(temp_path) <= 0:
+                    raise self.ErrorDownloading(temp_path)
             except IOError:
                 pass
             else:
