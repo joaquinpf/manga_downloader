@@ -6,10 +6,9 @@ import tempfile
 import os
 import config
 
-
-
 # ####################
 
+from shutil import copyfile
 from util.util import *
 
 # ####################
@@ -234,15 +233,19 @@ class SiteParserBase:
         # Loop to protect against server denies for requests and/or minor disconnects
         max_retries = 15
         wait_retry_time = 5
+        temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
         while True:
             try:
-                temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
-
                 r = requests.get(img_url, timeout=180)
 
+
+                if r.status_code >= 400 and r.status_code < 500 and max_retries == 0:
+                    copyfile('missing_page.jpg', temp_path)
+                    break
+
                 if r.status_code != 200:
+
                     if max_retries == 0:
-                        temp_path = os.path.join(self.temp_folder, manga_chapter_prefix + '_' + str(page).zfill(3))
                         raise self.ErrorDownloading(temp_path)
 
                     time.sleep(random.uniform(0.5 * wait_retry_time, 1.5 * wait_retry_time))
