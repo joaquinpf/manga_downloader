@@ -297,15 +297,14 @@ class SiteParserBase:
             print("PrepareDownload: " + url)
 
         self.download_chapter(url, manga_chapter_prefix, current_chapter)
-        self.post_download_processing(manga_chapter_prefix, download_path)
+        self.post_download_processing(manga_chapter_prefix, download_path, url)
 
     # Post process download by compressing and sending necesary notifications
-    def post_download_processing(self, manga_chapter_prefix, download_path):
+    def post_download_processing(self, manga_chapter_prefix, download_path, url):
         if config.timeLogging_FLAG:
             print("%s (End Time): %s" % (manga_chapter_prefix, str(time.time())))
 
         compress(self.temp_folder, manga_chapter_prefix, download_path, config.downloadFormat, config.overwrite_FLAG)
 
         if config.notificator:
-            config.notificator.push_note("MangaDownloader: %s finished downloading" % manga_chapter_prefix,
-                                               "%s finished downloading" % manga_chapter_prefix)
+            config.notificator.push_note(manga_chapter_prefix, manga_chapter_prefix, url)

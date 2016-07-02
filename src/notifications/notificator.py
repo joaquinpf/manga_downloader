@@ -13,5 +13,5 @@ class Notificator:
     def __init__(self, parameters):
         self.parameters = parameters
 
-    def push_note(self, title, body):
+    def push_note(self, title, body, url):
         raise NotImplementedError('Should have implemented this')

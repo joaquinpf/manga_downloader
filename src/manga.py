@@ -28,6 +28,7 @@ from colorama import init
 
 import config
 from plugins.factory import SiteParserFactory
+from notifications.factory import NotificationFactory
 
 
 
@@ -187,6 +188,8 @@ def main():
             json_parser = MangaJsonParser()
             while True:
                 configuration = json_parser.parse_config(config.json_file_path)
+                options.notificator = NotificationFactory.Instance().get_instance(configuration)
+                config.__dict__.update(options.__dict__)
 
                 downloader.download_chapters_from_config(configuration, options.downloadPath)
 
