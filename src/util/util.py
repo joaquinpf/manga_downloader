@@ -11,7 +11,7 @@ import imghdr
 import zipfile
 import shutil
 import glob
-
+import cfscrape
 import requests
 
 try:
@@ -62,6 +62,7 @@ def fix_formatting(s, space_token, remove_special_chars=True, lower_case=False, 
 
 
 def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_retry_time=3):
+
     """
     Loop to get around server denies for info or minor disconnects.
     """
@@ -74,12 +75,13 @@ def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_r
 
     global urlReqHeaders
 
+    scraper = cfscrape.create_scraper()
     ret = None
     requested_url = None
 
     while ret is None:
         try:
-            requested_url = requests.get(url, timeout=10)
+            requested_url = scraper.get(url, timeout=10)
             ret = requested_url.content
 
         except KeyboardInterrupt:
@@ -122,7 +124,10 @@ def zero_fill_str(input_string, num_of_zeros):
 
 def is_site_up(url):
     resp = requests.head(url)
-    return True if resp.status_code in [200, 301, 302] else False
+    if resp.status_code in [200, 301, 302] or (resp.status_code == 503 and resp.headers.get("Server") == "cloudflare-nginx"):
+        return True
+
+    return False
 
 
 def compress(temp_folder, manga_chapter_prefix, download_path, format, overwrite):

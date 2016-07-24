@@ -1,11 +1,12 @@
 underscore.py==0.1.3
 beautifulsoup4==4.4.1
 SocksiPy-branch==1.01
-requests==2.3.0
+requests==2.10.0
 pluginbase==0.3
 colorama==0.3.3
 termcolor==1.1.0
 six==1.7.3
-flask-blitzdb
 html5lib
-slacker
+slacker==0.9.18
+cfscrape==1.6.6
+js2py==0.37
