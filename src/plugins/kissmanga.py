@@ -39,12 +39,14 @@ class KissManga(SiteParserBase):
         for row in r_chapters:
             info = row.find_all('td')[0].a
             c_url = self.base_url + info['href']
-            title = info.get_text().strip()
-            chapter = title.lower().replace(manga.lower(), '').replace('read online', '').strip()
+            chapter_line = info.get_text().strip()
+            chapter = re.sub(manga.lower().replace('-', '.'), '', chapter_line.lower()).replace('read online', '').strip()
             chapter = re.sub("(vol\.[\d.]+)", '', chapter)
             chapter = re.sub("(:.*)", '', chapter)
+            chapter = re.sub("-.*", '', chapter)
             chapter = 'c' + re.sub("ch\.", '', chapter).strip()
             group = ''
+            title = manga + ' ' + chapter
             tu = {'url': c_url, 'title': title, 'chapter': chapter, 'group': group}
             chapters.append(tu)
 
