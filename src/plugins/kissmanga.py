@@ -24,7 +24,9 @@ class KissManga(SiteParserBase):
         SiteParserBase.__init__(self, 'http://kissmanga.com', 'KissManga')
 
     def get_manga_url(self, manga):
-        url = '%s/Manga/%s' % (self.base_url, fix_formatting(manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=False))
+        manga = fix_formatting(manga, '-', remove_special_chars=True, lower_case=True, use_ignore_chars=True, extra_ignore_chars=[':'])
+        manga = manga.replace(':', '-')
+        url = '%s/Manga/%s' % (self.base_url, manga)
         return url
 
     def parse_chapters(self, url, manga):

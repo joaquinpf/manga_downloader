@@ -46,16 +46,17 @@ class FatalError(Exception):
 IGNORE_CHARS = ['-', '(', '!', ')', '.']
 
 
-def fix_formatting(s, space_token, remove_special_chars=True, lower_case=False, use_ignore_chars=True):
+def fix_formatting(s, space_token, remove_special_chars=True, lower_case=False, use_ignore_chars=True, extra_ignore_chars = []):
     """
     Special character fix for filesystem paths.
     """
 
     formatted = s.lstrip(space_token).strip().replace(' ', space_token)
+    formatted = re.sub('-+', space_token, formatted).strip()
 
     if remove_special_chars:
         for i in string.punctuation:
-            if (i not in IGNORE_CHARS or not use_ignore_chars) and i != space_token:
+            if (i not in IGNORE_CHARS or not use_ignore_chars) and (i not in extra_ignore_chars) and i != space_token:
                 formatted = formatted.replace(i, '')
 
     return formatted.lower() if lower_case else formatted
