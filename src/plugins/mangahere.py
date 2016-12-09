@@ -21,7 +21,7 @@ from util.util import get_source_code, fix_formatting
 
 class MangaHere(SiteParserBase):
     re_get_series = re.compile('a href="http://.*?mangahere.*?/manga/([^/]*)/[^"]*?" class=[^>]*>([^<]*)</a>')
-    re_get_image = re.compile('<img src="([^"]*.jpg)[^"]*"')
+    re_get_image = re.compile('<img src="([^"]*)[^"]*"')
     re_get_max_pages = re.compile('var total_pages = ([^;]*?);')
     re_non_decimal = re.compile(r'[^\d.]+')
 
