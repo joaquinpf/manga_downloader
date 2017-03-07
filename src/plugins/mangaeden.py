@@ -17,7 +17,7 @@ from util.util import get_source_code, fix_formatting
 # ####################
 
 class MangaEden(SiteParserBase):
-    re_get_image = re.compile(ur'<img.*id="mainImg".*src="//(.*)"/>')
+    re_get_image = re.compile(ur'<img.*id="mainImg".*src="//(.*?)".*/>')
     re_get_max_pages = re.compile(ur'<span id="pageInfo_page">.* of (.*)</div>')
 
     def __init__(self):
