@@ -9,13 +9,13 @@ from util.util import get_source_code, fix_formatting
 
 
 class EatManga(SiteParserBase):
-    re_get_chapters = re.compile('<a href="([^"]*)" title="([^"]*)">([^<]*)</a>([^<]*)</th>')
+    re_get_chapters = re.compile('<a href="([^"]*)" title="([^"]*)">([^<]*)</a>([^<]*)</div>')
     re_get_max_pages = re.compile('</select> of (\d*)')
     re_get_page = re.compile("<option value=\"([^']*?)\"[^>]*>\s*(\d*)</option>")
     re_get_image = re.compile('img id="eatmanga_image.*" src="([^"]*)')
 
     def __init__(self):
-        SiteParserBase.__init__(self, 'http://eatmanga.com', 'EatManga')
+        SiteParserBase.__init__(self, 'http://eatmanga.me', 'EatManga')
 
     def get_manga_url(self, manga):
         url = '%s/Manga-Scan/%s' % (self.base_url, fix_formatting(manga, '-', remove_special_chars=True, lower_case=False, use_ignore_chars=False))
@@ -54,7 +54,7 @@ class EatManga(SiteParserBase):
         pages = list(OrderedDict.fromkeys(pages))
 
         for page in pages:
-            page_url = 'http://eatmanga.com%s' % page[0]
+            page_url = 'http://eatmanga.me%s' % page[0]
             self.parse_image_page(page[1], page_url, manga_chapter_prefix, len(pages), current_chapter)
 
 #Register plugin
