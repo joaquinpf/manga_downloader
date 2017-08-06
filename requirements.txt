@@ -10,3 +10,4 @@ html5lib<=0.9999999
 slacker==0.9.42
 cfscrape==1.6.6
 js2py==0.37
+lxml==3.7.3
