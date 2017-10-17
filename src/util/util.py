@@ -76,6 +76,7 @@ def get_source_code(url, proxy, return_redirect_url=False, max_retries=3, wait_r
 
     global urlReqHeaders
 
+    url = 'http:' + url if not url.startswith('http') else url
     scraper = cfscrape.create_scraper()
     ret = None
     requested_url = None

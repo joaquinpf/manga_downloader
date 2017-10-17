@@ -42,6 +42,7 @@ class MangaTown(SiteParserBase):
         for row in r_chapters:
             info = row.a
             c_url = info['href']
+            c_url = 'http:' + c_url if not c_url.startswith('http') else c_url
             chapter_line = info.get_text().strip()
             chapter = re.sub(manga.lower().replace('-', '.').replace(' ', '.'), '', chapter_line.lower().replace('-', '.')).replace('read online', '').replace('chapter', '').strip()
             chapter = re.sub("(vol\.[\d.]+)", '', chapter)
