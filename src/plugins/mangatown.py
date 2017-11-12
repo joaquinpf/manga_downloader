@@ -66,7 +66,12 @@ class MangaTown(SiteParserBase):
     def get_max_pages(self, url):
         source = get_source_code(url, config.proxy)
         soup = BeautifulSoup(source, 'html.parser')
-        return len(soup.find("div", class_="page_select").find_all("option"))
+        page_count = 0
+
+        for page in soup.find("div", class_="page_select").find_all("option"):
+            page_count = page_count + 1 if page.text != "Featured" else page_count
+
+        return page_count
 
     def download_chapter(self, url, manga_chapter_prefix, current_chapter):
         max_pages = self.get_max_pages(url)
