@@ -28,6 +28,7 @@ class MangaTown(SiteParserBase):
         manga = fix_formatting(manga, '_', remove_special_chars=True, lower_case=True, use_ignore_chars=True, extra_ignore_chars=[':', '/'])
         manga = manga.replace(':', '_')
         manga = manga.replace('/', '_')
+        manga = manga.replace('!', '')
         manga = re.sub(r'_+', '_', manga)
         url = '%s/manga/%s' % (self.base_url, manga)
         return url

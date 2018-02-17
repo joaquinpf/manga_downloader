@@ -17,7 +17,7 @@ from util.util import get_source_code, fix_formatting
 # ####################
 
 class MangaStream(SiteParserBase):
-    re_get_image = re.compile('img id="manga-page" src="//([^"]*)".*')
+    re_get_image = re.compile('img id="manga-page"[ \t]+src="//([^"]*)".*')
     re_get_max_pages = re.compile(ur'Last Page \((\d*)\)', re.DOTALL)
 
     def __init__(self):
@@ -40,7 +40,7 @@ class MangaStream(SiteParserBase):
 
         for row in r_chapters:
             info = row.find_all('td')[0].a
-            c_url = info['href']
+            c_url = 'http://mangastream.com' + info['href']
             chapter_line = info.get_text().strip()
             chapter = chapter_line.rsplit('-', 1)[0]
             chapter = re.sub(manga.lower().replace('-', '.'), '', chapter.lower()).replace('read online', '').replace('chapter', '').strip()
